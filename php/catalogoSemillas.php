@@ -32,6 +32,46 @@
 </head>
 
 <body>
+    <?php
+        include ("../functions/funciones.php");//Funciones de la app
+        include("../db/conexion.php");
+
+        $resultadoConsultarSemillas=consultarSemillas($conexion_db);//Llamar la función que realiza la consulta de todas las semillas
+
+        if(isset($_POST["enviarSolicitud"])){
+
+            //Recuperar la fecha y hora actual del sistema
+            date_default_timezone_set('America/Bogota');
+            $fechaActual=date('Y-m-d');
+
+            $nombre=$_POST["username"];
+            $correo=$_POST["email"];
+            $semilla=$_POST["seed"];
+            $mensaje=$_POST["message"];
+
+            $tipoSolicitud=$_POST["enviarSolicitud"];
+
+            if(isset($_SESSION["numeroDocumento"])){
+                $numeroDocumento=$_SESSION["numeroDocumento"];
+
+                $queryInsertarSolicitud="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado, usuNumeroDocumento )
+                VALUES('$fechaActual', '$tipoSolicitud', '$mensaje', 'Pendiente', '$numeroDocumento')";
+                $resultadoInsertarSolicitud=mysqli_query($conexion_db, $queryInsertarSolicitud);
+
+            }else{
+                $queryInsertarSolicitud="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado)
+                VALUES('$fechaActual', '$tipoSolicitud', '$mensaje', 'Pendiente')";
+                $resultadoInsertarSolicitud=mysqli_query($conexion_db, $queryInsertarSolicitud);
+            }
+
+            if($resultadoInsertarSolicitud==true){
+                //Enviar correo electrónico para confirmar su solicitud 
+                include("mailConfirmacionSolicitud.php");
+            }else{
+                $_SESSION["alerta"]="errorConsulta";
+            }
+        }
+    ?>
     <div class="container-xxl bg-white p-0">
         <!-- Spinner Start -->
        <!--  <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -67,12 +107,6 @@
             </div>
         </div>
         <!-- Page Header End -->
-
-        <?php
-            include ("../functions/funciones.php");//Funciones de la app
-            include("../db/conexion.php");
-            $resultadoConsultarSemillas=consultarSemillas($conexion_db);//Llamar la función que realiza la consulta de todas las semillas
-        ?>
 
         <!-- Semillas Start -->
         <div class="container-xxl py-5">
@@ -117,35 +151,35 @@
                     <div class="row g-0">
                         <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                             <div class="h-100 d-flex flex-column justify-content-center p-5">
-                                <h1 class="mb-4">Solicita tu propia Semilla</h1>
-                                <form>
+                                <h1 class="mb-4">Solicite su propia Semilla</h1>
+                                <form action="catalogoSemillas.php" method="POST">
                                     <div class="row g-3">
                                         <div class="col-sm-6">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control border-0" id="gname" placeholder="Gurdian Name">
+                                                <input type="text" class="form-control border-0" id="gname" name="username" placeholder="Gurdian Name">
                                                 <label for="gname">Nombre completo</label>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-floating">
-                                                <input type="email" class="form-control border-0" id="gmail" placeholder="Gurdian Email">
+                                                <input type="email" class="form-control border-0" id="gmail" name="email" placeholder="Gurdian Email">
                                                 <label for="gmail">Correo Electrónico</label>
                                             </div>
                                         </div>    
                                         <div class="col-sm-6">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control border-0" id="seed" placeholder="Gurdian Seed">
+                                                <input type="text" class="form-control border-0" id="seed" name="seed" placeholder="Gurdian Seed">
                                                 <label for="seed">Semilla</label>
                                             </div>
                                         </div>                                    
                                         <div class="col-12">
                                             <div class="form-floating">
-                                                <textarea class="form-control border-0" placeholder="Leave a message here" id="message" style="height: 100px"></textarea>
+                                                <textarea class="form-control border-0" placeholder="Leave a message here" id="message"  name="message" style="height: 100px"></textarea>
                                                 <label for="message">Mensaje</label>
                                             </div>
                                         </div>
                                         <div class="col-12">
-                                            <button class="btn btn-primary w-100 py-3" type="submit">Enviar</button>
+                                            <button class="btn btn-primary w-100 py-3" type="submit" name="enviarSolicitud" value="Admisión Nueva Semilla">Enviar</button>
                                         </div>
                                     </div>
                                 </form>
@@ -203,5 +237,32 @@
 
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
+
+    <?php 
+        
+        //Ejecutar mensajes emergentes
+        if(isset($_SESSION["alerta"])){
+            switch ($_SESSION["alerta"]) {
+                case 'errorConsulta': ?>
+                    <script>
+                        //Mensaje cuando surge un error a la hora de registrar la reseña del usuario
+                        mostrarMensaje({
+                            title:"¡Error a la hora de enviar su solicitud!",
+                            text:"Recarge la página y vuelva a intentarlo",
+                            icon:"error",
+                                                            
+                            //Si el usuario acepta volver a enviar la solicitud
+                            rutaTrue:"catalogoSemillas.php",
+
+                            //Si el usuario no acepta volver a enviar la solicitud
+                            rutaFalse:"catalogoSemillas.php"
+                        })
+                    </script>
+                    <?php
+                break;
+            }
+            unset($_SESSION["alerta"]);
+        }
+    ?>
 </body>
 </html>

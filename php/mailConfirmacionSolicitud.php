@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>Confirmar Publicación Reseña</title>
+    <title>Confirmar Solicitud</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <script src="../js/script_mostrarMensaje.js"></script>
@@ -36,13 +36,13 @@
 
             //Recipients
             $mail->setFrom('biourbiscompany@gmail.com', 'BioUrbis');//Persona que envia el correo
-            $mail->addAddress($correoUsuario, $nombreUsuario); //Persona que recibe el correo
+            $mail->addAddress($correo, $nombre); //Persona que recibe el correo
             //$mail->addAddress('ellen@example.com');               //Más correos
 
             //Content-Contenido correo
             $mail->isHTML(true);
             $mail->CharSet='UTF-8';                                    //Set email format to HTML
-            $mail->Subject = 'BioUrbis-Reseña publicada con éxito';
+            $mail->Subject = 'BioUrbis-Solicitud $tipoenviada con éxito';
             $mail->Body    = 
             "<table style= 'max-width: 600px; padding: 10px; margin: 0 auto; border-collapse: collapse; font-family: 'Montserrat';border-radius:5px;'>
                 <tr>
@@ -58,12 +58,14 @@
                 <tr>
                     <td>
                         <div style=' color:#34495e; margin: 4% 10% 2%; text-align: justify; font-family: 'Montserrat';'>
-                            <h2 style='color: rgb(184, 98, 12); margin: 0 0 7px;'>Hola $nombreUsuario</h2>
+                            <h2 style='color: rgb(184, 98, 12); margin: 0 0 7px;'>Hola $nombre</h2>
                             <p style='margin: 2px; font-size: 20px;'>
-                                <h3 style='color:black;'><b >Su reseña ya fue publicada en nuestra plataforma</b></h3>
-                                <div style='color:black;'>Mensaje: '$mensajeUsuario'. 
-                                    <p>Gracias por compartir su opinión, sus comentarios nos ayudan a mejorar y a que más personas
-                                    conozcan nuestra experiencia</p>
+                                <h3 style='color:black;'><b >Su solicitud ha sido enviada a un administrador en nuestra plataforma</b></h3>
+                                <div style='color:black;'>
+                                    <p><strong>Mensaje:</strong> $mensaje</p>
+                                    <p>
+                                        Hemos recibido su solicitud sobre <strong>$tipoSolicitud</strong>. Actualmente se encuentra en proceso de revisión; en el transcurso de la semana le informaremos sobre los siguientes pasos.
+                                    </p>
                                 </div>
                             </p>
                             <h5 style='color: rgb(184, 98, 12); margin-bottom: 50px; font-size:20px;'>Si tiene alguna pregunta o necesita ayuda, no dude en contactarnos</h5>
