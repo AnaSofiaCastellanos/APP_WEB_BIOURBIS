@@ -5,6 +5,7 @@ function mostrarMensaje(config){
         //Ubicación del mensaje emergente
         position: 'center',
         scrollbarPadding: false, 
+        heightAuto:false,
         allowOutsideClick:false, //No permitir el cierre de la pantalla fuera de la misma
 
         //Botón de confirmación

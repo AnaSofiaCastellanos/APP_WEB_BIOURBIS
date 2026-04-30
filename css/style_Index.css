@@ -248,6 +248,22 @@ h6,
     border-color: var(--primary);
 }
 
+.header-carousel .owl-carousel-item {
+    position: relative;
+    height: 850px; 
+}
+
+.header-carousel .owl-carousel-item img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.header-carousel .position-absolute {
+    height: 100%;
+}
+
 .page-header {
     background: linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)), url(../img/carousel-1.jpg) center center no-repeat;
     background-size: cover;
@@ -529,15 +545,15 @@ h6,
     display: none;
 }
 .semilla{
-    width: auto;
-    height: auto;
+    width: 150px;
+    height: 150px;
 }
 .semilla-fresa { width: 140px; height: 140px; object-fit: contain; }
-.semilla-durazno { width: 160px; height: 160px; object-fit: contain; }
-.semilla-tomate { width: 130px; height: 130px; object-fit: contain; }
-.semilla-maracuya { width: 150px; height: 150px; object-fit: contain; }
-.semilla-guayaba { width: 120px; height: 120px; object-fit: contain; }
-.semilla-pimenton { width: 170px; height: 170px; object-fit: contain; }
+.semilla-durazno { width: 140px; height: 140px; object-fit: contain; }
+.semilla-tomate { width: 140px; height: 140px; object-fit: contain; }
+.semilla-maracuya { width: 140px; height: 140px; object-fit: contain; }
+.semilla-guayaba { width: 140px; height: 140px; object-fit: contain; }
+.semilla-pimenton { width: 140px; height: 140px; object-fit: contain; }
 .semilla-fresa,
 .semilla-durazno,
 .semilla-tomate,
@@ -547,6 +563,82 @@ h6,
     display: block;
     margin: 0 auto;
     object-fit: contain;
+}
+
+/* CONTENEDOR GENERAL */
+.contenedor-resenas {
+    width: 90%;
+    max-width: 800px;
+    margin: 40px auto;
+    font-family: Arial, sans-serif;
+}
+
+/* TÍTULO */
+.titulo-resenas {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+/* LISTA */
+.lista-resenas {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* TARJETA */
+.card-resena {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* EFECTO HOVER */
+.card-resena:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+/* HEADER (nombre + fecha) */
+.resena-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* NOMBRE */
+.nombre {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* FECHA */
+.fecha {
+    font-size: 0.9em;
+    color: #888;
+}
+
+/* MENSAJE */
+.mensaje {
+    color: #555;
+    line-height: 1.5;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.nombre-logo {
+    margin-left: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .redireccion, .botonRespuesta{
@@ -563,5 +655,4 @@ h6,
 .redireccionScript:hover{
   color: rgb(42, 59, 30); 
 }
-
 

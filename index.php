@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>BioUrbis-Gestión de Huertos</title>
+    <title>Inicio | BioUrbis</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -33,18 +33,18 @@
 <body>
     <?php 
         session_start();
-
-        //Incluir la conexión a la base de datos
-        include("db/conexion.php");
         //Incluir las funciones de la app
         include("functions/funciones.php");
+        
+        //Abrir la conexion a la base de datos
+        $conexion_db=abrirConexionDB();
 
         //Recuperar la fecha y hora actual del sistema
-        date_default_timezone_set('America/Bogota');
-        $fechaActual=date('Y-m-d');
+        $fechaActual=recuperarFechaActual();
 
         //Si el usuario oprime el botón de enviar la reseña
         if(isset($_POST["enviarResena"])){
+            //Recuperar la reseña del usuario
             $mensajeUsuario=$_POST["message"];
 
             //Si el usuario inicio sesión en el sistema
@@ -52,7 +52,7 @@
                 $usuarioActivo=$_SESSION["numeroDocumento"];
 
                 //Consultar los datos del usuario registrado
-                $datosUsuario=consultarDatosUsuario($usuarioActivo, $conexion_db);
+                $datosUsuario=consultarDatosUsuario($usuarioActivo);
                 $nombreUsuario=$datosUsuario["usuNombre"];
                 $correoUsuario=$datosUsuario["usuCorreo"];
 
@@ -78,17 +78,16 @@
 
             if($resultadoRegistrarResena){  
                 //Enviar correo electrónico para confirmar su reseña 
-                include("php/mailConfirmacionResena.php");
-/*                 ?>
+                include("php/mailConfirmacionResena.php"); ?>
                 <!--Redirección a la pagina inicial del proyecto -->
                 <script> window.location.replace("index.php");</script>
-                <?php */
+                <?php 
             }else{
                 $_SESSION["alerta"]="errorConsulta";
             }
         }  
     ?>
-    <div class="container-xxl bg-white p-0">
+<div class="container-fluid bg-white p-0">
         <!-- Spinner Start -->
         <!-- <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
@@ -99,13 +98,15 @@
 
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-            <a href="index.html" class="logo"><image src="images/img_logotipo.png" width="80px" height="80px"></image></a>
+            <a href="index.php" class="logo"><image src="images/img_logotipo.png" width="80px" height="80px"></image></a>
+            <a href="../index.php" class="logo"><span class="nombre-logo">BioUrbis</span></a>
+
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-auto">
-                    <a href="index.php" class="nav-item nav-link active" style="font-family: 'Montserrat', sans-serif;">Home</a>
+                    <a href="index.php" class="nav-item nav-link active" style="font-family: 'Montserrat', sans-serif;">Inicio</a>
                     <a href="sobreNosotros.html" class="nav-item nav-link" style="font-family: 'Montserrat', sans-serif;">Sobre Nosotros</a>
                     <a href="php/catalogoSemillas.php" class="nav-item nav-link" style="font-family: 'Montserrat', sans-serif;">Nuestras Semillas</a>
                 </div>
@@ -117,44 +118,131 @@
         <!-- Carousel Start -->
         <div class="container-fluid p-0 mb-5">
             <div class="owl-carousel header-carousel position-relative">
+
+                <!-- SLIDE 1 -->
                 <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="images\tree2.jpg" alt="">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
+                    <img class="img-fluid" src="images/img_fondo1.jpg" alt="BioUrbis plataforma">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center"
+                        style="background: rgba(0, 0, 0, .5);">
                         <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">¿Qué es BioUrbis?</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2" style="font-family: 'Montserrat', sans-serif;">
-                                        BioUrbis es una plataforma web diseñada para facilitar la gestion de huertos urbanos. 
-                                        Permite registrar cultivos, recibir recomendaciones y generar alertas. 
-                                        Esta pensada para comunidades, familias, instituciones educativas y agricultores urbanos que deseen cultivar de forma sostenible y educativa</p>
-                                    <a href="" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft" style="font-family: 'Montserrat', sans-serif;">Saber más</a>
-                                    
+                            <div class="col-lg-8">
+                                <span class="badge bg-success mb-3 fs-6">BioUrbis</span>
+                                <h1 class="display-2 text-white mb-4">
+                                    ¿Qué es BioUrbis?
+                                </h1>
+                                <p class="text-white mb-3">
+                                    Es una plataforma web que facilita la gestión de huertos urbanos, 
+                                    ayudando a cultivar de forma organizada, sostenible e inteligente.
+                                </p>
+                                <div class="mb-4">
+                                    <p class="text-white"><i class="fa fa-check-circle text-success me-2"></i>Gestión de cultivos</p>
+                                    <p class="text-white"><i class="fa fa-check-circle text-success me-2"></i>Recomendaciones útiles</p>
+                                    <p class="text-white"><i class="fa fa-check-circle text-success me-2"></i>Uso educativo y comunitario</p>
+                                </div>
+                                <a href="sobreNosotros.html" class="btn btn-primary rounded-pill px-4 py-2 me-2">
+                                    Saber más
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE 2 -->
+                <div class="owl-carousel-item position-relative">
+                    <img class="img-fluid" src="images/img_fondo2.jpg" alt="Huerto urbano">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center"
+                        style="background: rgba(0, 0, 0, .5);">
+                        <div class="container">
+                            <div class="col-lg-8">
+                                <span class="badge bg-success mb-3 fs-6">Agricultura Urbana</span>
+                                <h1 class="display-2 text-white mb-4">
+                                    Cultiva tu propio espacio verde
+                                </h1>
+                                <p class="text-white fs-5 mb-4">
+                                    Gestiona tus huertos urbanos de forma fácil e inteligente con BioUrbis.
+                                </p>
+                                <div class="mb-4">
+                                    <p class="text-white"><i class="fa fa-check-circle text-success me-2"></i>Control de cultivos</p>
+                                    <p class="text-white"><i class="fa fa-check-circle text-success me-2"></i>Alertas de riego</p>
+                                    <p class="text-white"><i class="fa fa-check-circle text-success me-2"></i>Fichas técnicas</p>
+                                </div>     
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- SLIDE 3 -->
+                <div class="owl-carousel-item position-relative">
+                    <img class="img-fluid" src="images/img_fondo3.jpg" alt="Cultivos en casa">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center"
+                        style="background: rgba(0, 0, 0, .5);">
+                        <div class="container">
+                            <div class="col-lg-8">
+                                <span class="badge bg-warning mb-3 fs-6">Funcionalidades</span>
+                                <h1 class="display-2 text-white mb-4">
+                                    Todo lo que puedes hacer
+                                </h1>
+                                <div class="mb-4">
+                                    <p class="text-white"><i class="fa fa-leaf text-success me-2"></i>Registrar y gestionar cultivos</p>
+                                    <p class="text-white"><i class="fa fa-seedling text-success me-2"></i>Explorar catálogo de semillas</p>
+                                    <p class="text-white"><i class="fa fa-bell text-success me-2"></i>Alertas de riego y cuidado</p>
+                                    <p class="text-white"><i class="fa fa-book text-success me-2"></i>Fichas técnicas detalladas</p>
+                                    <p class="text-white"><i class="fa fa-users text-success me-2"></i>Uso educativo y comunitario</p>
+                                    <p class="text-white"><i class="fa fa-globe text-success me-2"></i>Promoción de sostenibilidad</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- SLIDE 4 -->
                 <div class="owl-carousel-item position-relative">
-                    <img class="img-fluid" src="images\tree.jpg" alt="">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0, 0, 0, .2);">
+                    <img class="img-fluid" src="images/img_fondo4.jpg" alt="Aprendizaje">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center"
+                        style="background: rgba(0, 0, 0, .5);">
                         <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-10 col-lg-8">
-                                    <h1 class="display-2 text-white animated slideInDown mb-4">¿Qué puedes hacer en la plataforma?</h1>
-                                    <p class="fs-5 fw-medium text-white mb-4 pb-2" > <ul>
-                                        <li class="fs-5 fw-medium text-white mb-4 pb-2" style="font-family: 'Montserrat', sans-serif;">Registrar tus huertos y cultivos</li>
-                                        <li class="fs-5 fw-medium text-white mb-4 pb-2" style="font-family: 'Montserrat', sans-serif;">Elegir semillas de un catálago predefinido</li>
-                                        <li class="fs-5 fw-medium text-white mb-4 pb-2" style="font-family: 'Montserrat', sans-serif;">Recibir alertas sobre riego,cosecha y cuidados de cada cultivo</li>
-                                        <li class="fs-5 fw-medium text-white mb-4 pb-2" style="font-family: 'Montserrat', sans-serif;">Consultar fichas técnicas de cada semilla</li>
-                                        <li class="fs-5 fw-medium text-white mb-4 pb-2" style="font-family: 'Montserrat', sans-serif;">Enviar reportes o solicitudes para mejorar su experiencia</li>
-                                    </ul> </p>
-                                    <a href="" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft" style="font-family: 'Montserrat', sans-serif;">Saber más</a>
-                                </div>
+                            <div class="col-lg-8">
+                                <span class="badge bg-info mb-3 fs-6">Aprendizaje</span>
+                                <h1 class="display-2 text-white mb-4">
+                                    Aprende sobre cada cultivo
+                                </h1>
+
+                                <p class="text-white fs-5 mb-4">
+                                    Consulta fichas técnicas detalladas y mejora tus resultados.
+                                </p>
+
+                                <a href="php/catalogoSemillas.php" class="btn btn-primary rounded-pill px-4 py-2 me-2">Ver semillas</a>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- SLIDE 5 -->
+                <div class="owl-carousel-item position-relative">
+                    <img class="img-fluid" src="images/img_fondo5.jpg" alt="Comunidad">
+
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center"
+                        style="background: rgba(0, 0, 0, .5);">
+
+                        <div class="container">
+                            <div class="col-lg-8">
+                                <span class="badge bg-primary mb-3 fs-6">Comunidad</span>
+
+                                <h1 class="display-2 text-white mb-4">
+                                    Conecta con otros cultivadores
+                                </h1>
+
+                                <p class="text-white fs-5 mb-4">
+                                    Comparte experiencias y mejora tu huerto con ayuda de la comunidad.
+                                </p>
+
+                                <a href="forms/formRegistro.php" class="btn btn-primary rounded-pill px-4 py-2 me-2">Únete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
         <!-- Carousel End -->
@@ -205,7 +293,7 @@
         <!-- Reseñas Start -->
         <div class="container-xxl py-5">
             <div class="container">
-                <div class="bg-light rounded">
+                <div class="rounded" style="background-color: rgb(234,213,166);">
                     <div class="row g-0">
                         <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                             <div class="h-100 d-flex flex-column justify-content-center p-5">
@@ -239,23 +327,37 @@
                         </div>
                         <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s" style="min-height: 400px;">
                             <div class="position-relative h-100">
-                                <img class="position-absolute w-100 h-100 rounded" src="images\contact.jpg" style="object-fit: cover;">
+                                <img class="position-absolute w-100 h-100 rounded" src="images\img_resena.jpg" style="object-fit: cover;">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <?php 
-            $queryConsultarResenas="SELECT * FROM resena LIMIT 5"; 
-            $resultadoConsultarResenas=mysqli_query($conexion_db, $queryConsultarResenas);
 
-            while($resenas=mysqli_fetch_array($resultadoConsultarResenas)){
-                echo "Nombre: ", $resenas["resenaNombreUsuario"];
-                echo "Fecha: ", $resenas["resenaFecha"];
-                echo "Mensaje: ", $resenas["resenaDescripcion"];
-            }
-        ?>
+        <div class="contenedor-resenas">
+            <h2 class="titulo-resenas">Reseñas</h2>
+
+            <div class="lista-resenas">
+                <?php  
+                   $queryConsultarResenas="SELECT * FROM resena ORDER BY resenaFecha DESC LIMIT 5";  
+                    $resultadoConsultarResenas=mysqli_query($conexion_db, $queryConsultarResenas);
+
+                    while($resenas=mysqli_fetch_array($resultadoConsultarResenas)){
+                ?>
+                    <div class="card-resena">
+                        <div class="resena-header">
+                            <span class="nombre"><?php echo $resenas["resenaNombreUsuario"]; ?></span>
+                            <span class="fecha"><?php echo $resenas["resenaFecha"]; ?></span>
+                        </div>
+
+                        <p class="mensaje">
+                            <?php echo $resenas["resenaDescripcion"]; ?>
+                        </p>
+                    </div>
+                <?php } ?>
+            </div>
+        </div>
         <!-- Reseñas End -->
 
         <!-- Footer Start -->
@@ -270,7 +372,7 @@
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <h3 class="text-white mb-4" >Información rápida</h3>
-                        <a class="btn btn-link text-white-50" href="about.html" style="font-family: 'Montserrat', sans-serif;">Sobre Nosotros</a>
+                        <a class="btn btn-link text-white-50" href="sobreNosotros.html" style="font-family: 'Montserrat', sans-serif;">Sobre Nosotros</a>
                         <a class="btn btn-link text-white-50" href="" style="font-family: 'Montserrat', sans-serif;">Contacto</a>
                     </div>      
                 </div>
@@ -292,7 +394,6 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
-
     <?php 
         //Ejecutar mensajes emergentes
         if(isset($_SESSION["alerta"])){
@@ -319,5 +420,4 @@
         }
     ?>
 </body>
-
 </html>

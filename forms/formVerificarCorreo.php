@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificar Cuenta</title>
+    <title>Verificación Cuenta | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <link rel="stylesheet" href="../css/style_RegistroAutenticacion.css">
@@ -13,13 +13,15 @@
 </head>
 <body>
     <?php 
-        //Incluir la conexión a la base de datos
-        include("../db/conexion.php");
-
+        //Activar la sesion para recuperar el código de verificación generado por el sistema y el número de documento del usuario registrado
         session_start();
+        //Incluir las funciones del aplicativo
+        include("../functions/funciones.php");
+        
         //Recuperar código de verificación generado por el sistema
         $codVerificacion=$_SESSION["codigoVerificacion"];
 
+        //Recuperar número de documento del usuario registrado
         $numeroDocumento=$_SESSION["numeroDocumento"];
         
         //Si el usuario oprimer el botón de verificar el código recibido
@@ -27,7 +29,12 @@
             //Recuperar el código de verificación ingresado por el usuario
             $codVerificacionUsuario=$_POST["codVerificacion"];
 
+            //Si el codigo de verificacion es igual al generado por el sistema
             if($codVerificacionUsuario==$codVerificacion){ 
+
+                //Abrir la conexión a la base de datos     
+                $conexion_db=abrirConexionDB();
+
                 //Consulta para actualizar el estado del correo a Verificado
                 $queryVerificarCorreo="UPDATE usuario SET usuEstadoCorreo='Verificado' WHERE usuNumeroDocumento='$numeroDocumento'";
                 $resultadoVerificarCorreo=mysqli_query($conexion_db, $queryVerificarCorreo);
@@ -38,7 +45,7 @@
 
                     //Destruir la sesión o existencia del código generado por el sistema
                     session_destroy(); 
-                }
+                }            
             }else{   
                 //Ejecutar mensaje cuando el código de verificación no es correcto
                 $_SESSION["alerta"]="codigoIncorrecto";                

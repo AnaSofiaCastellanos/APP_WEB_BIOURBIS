@@ -46,19 +46,6 @@ body{
     margin-bottom: 20px;
     color: rgb(38, 41, 22);
 }
-.social-networks{
-    display: flex;
-    gap:12px;
-    margin-bottom: 25px;
-}
-.social-networks i{
-    border: 1px solid rgb(177, 166, 135); 
-    font-size: 18px;
-    border-radius: 6px;
-    padding: 8px;
-    cursor: pointer;
-    color: rgb(79, 60, 25); 
-}
 .container-form span{
     font-size: 24px;
     margin-bottom: 15px;
@@ -206,3 +193,33 @@ select .opcion:hover{
     outline:none;
     box-shadow: none;
 }
+/* Evitar que SweetAlert desplace el contenido del body */
+body.swal2-shown {
+    overflow-y: auto !important;
+    padding-right: 0 !important;
+}
+.container-form a.button-regresar{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg,rgb(234, 213, 166) , rgb(184, 98, 12));
+    border: none;
+    border-radius: 999px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    box-shadow: 0 12px 20px rgba(79, 60, 25, 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.container-form a.button-regresar:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 16px 28px rgba(79, 60, 25, 0.24);
+    filter: brightness(1.05);
+}
+.container-form a.button-regresar i{
+    font-size: 18px;
+}
+

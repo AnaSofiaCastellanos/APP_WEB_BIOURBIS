@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Usuarios</title>
+    <title>Registro | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <link rel="stylesheet" href="../css/style_RegistroAutenticacion.css">
@@ -12,16 +12,17 @@
 </head>
 <body>
     <?php 
-        //Elimina cualquier dato de sesión almacenado anteriormente
+        //Iniciar la sesion 
         session_start();
 
-        //Incluir la conexión a la base de datos
-        include("../db/conexion.php");
         //Incluir las funciones de la app
         include("../functions/funciones.php");
 
-        $queryConsultarTiposDocumento="SELECT * FROM tipo_documento";
-        $resultadoConsultarTiposDocumento=mysqli_query($conexion_db, $queryConsultarTiposDocumento);
+        //Abrir la conexion a la base de datos
+        $conexion_db=abrirConexionDB();
+
+        //Consultar todos los tipos de documento
+        $resultadoConsultarTiposDocumento=consultarTiposDocumentos();
 
         //Si el usuario oprime el boton de registrarse
         if(isset($_POST["botonRegistrarse"])){
@@ -33,10 +34,7 @@
         <div class="container-form">
             <form action="../forms/formRegistro.php" class="sign-up" method="POST">
                 <h2>Registrarse</h2>
-                <div class="social-networks">
-                    <i class="bi bi-google"></i>
-                    <i class="bi bi-instagram"></i>
-                </div>
+                <a href="../index.php" class="button-regresar"><i class="bi bi-arrow-left-circle"></i> Regresar al inicio</a>
                 <span>Ingrese sus datos personales</span>
                 <div class="container-input">
                     <i class="bi bi-person"></i>
@@ -47,6 +45,7 @@
                     <select name="tipoDocumento" required>
                         <option name="opcion">Seleccionar su Tipo de Documento</option>
                         <?php 
+                            //Mostrar todos los tipos de documentos registrados en la base de datos en el select del formulario de registro
                             while($datosTipoDocumento=mysqli_fetch_array($resultadoConsultarTiposDocumento)){//Bucle para recorrer todos los tipos de documentos registrados
                         ?>
                             <option value="<?php echo $datosTipoDocumento["idTipoDocumento"]?>"><?php echo $datosTipoDocumento["tipoDocDescripcion"]?></option> 
@@ -57,7 +56,7 @@
                 </div>
                 <div class="container-input">
                     <i class="bi bi-person-vcard"></i>
-                    <input type="text" placeholder="Número de Documento" name="numDocumento" required>
+                    <input type="text" placeholder="Número de Documento" name="numDocumento" autocomplete="off" required>
                 </div>
                 <div class="container-input">
                     <i class="bi bi-geo-alt"></i>
@@ -69,7 +68,7 @@
                 </div>
                 <div class="container-input">
                     <i class="bi bi-lock"></i>
-                    <input type="password" placeholder="Contraseña" name="contrasena" required>
+                    <input type="password" placeholder="Contraseña" name="contrasena" autocomplete="off" required>
                 </div>
                 <div class="container-input-checkbox">
                     <label><input type="checkbox" name="confirmarUsoDatos" required> Acepto el uso y tratamiento de mis datos personales</label>

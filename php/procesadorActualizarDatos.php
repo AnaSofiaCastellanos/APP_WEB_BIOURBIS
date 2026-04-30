@@ -1,18 +1,20 @@
 <?php 
     session_start();
+    //Recuperar el número de documento del usuario activo
     $usuarioActivo=$_SESSION["numeroDocumento"];
 
-    //Incluir la conexión a la base de datos
-    include("../db/conexion.php");
     //Incluir las funciones de la app
     include("../functions/funciones.php");
+
+    //Abrir la conexion a la base de datos
+    $conexion_db=abrirConexionDB();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualización de datos</title>
+    <title>Actualización de Datos | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <link rel="stylesheet" href="../css/style_RegistroAutenticacion.css">
@@ -25,14 +27,14 @@
     //Si el usuario oprime el botón de actualizar datos
     if(isset($_POST["guardarCambiosBtn"])){
         //Consultar los datos del usuario
-        $datosUsuario=consultarDatosUsuario($usuarioActivo, $conexion_db);
+        $datosUsuario=consultarDatosUsuario($usuarioActivo);
 
         //Verificar si el correo del usuario se encuentra verificado
         if($datosUsuario["usuEstadoCorreo"]==="Verificado"){
 
             //Recuperar los datos del usuario registrados en el formulario
             $nombreCompleto=$_POST["name"];
-            $tipoDocumento=$_POST["typeId"];
+            $tipoDocumento=$_POST["editTypeIdProfile"];
             $correo=$_POST["email"];
             $barrio=$_POST["location"];
             $contrasena=$_POST["password"];
@@ -46,20 +48,16 @@
             }
 
             //Actualizar el tipo de documento del usuario
-            if($tipoDocumento!=""){
-                $_SESSION["nuevoTipoDocumento"]=$tipoDocumento;
-            }else{
-                $descripcionTipoDoc=$datosUsuario["idTipoDocumento"];
+            $descripcionTipoDoc=$datosUsuario["idTipoDocumento"];
 
-                $queryConsultarIdTipoDoc="SELECT * FROM tipo_documento WHERE tipoDocDescripcion='$descripcionTipoDoc'";
-                $resultadoQuery=mysqli_query($conexion_db, $queryConsultarIdTipoDoc);
+            $queryConsultarIdTipoDoc="SELECT * FROM tipo_documento WHERE tipoDocDescripcion='$descripcionTipoDoc'";
+            $resultadoQuery=mysqli_query($conexion_db, $queryConsultarIdTipoDoc);
 
-                if(mysqli_num_rows($resultadoQuery)){
-                    $datosTipoDoc=mysqli_fetch_array($resultadoQuery);
-                    $_SESSION["nuevoTipoDocumento"]=$datosTipoDoc["idTipoDocumento"];
+            if(mysqli_num_rows($resultadoQuery)){
+                $datosTipoDoc=mysqli_fetch_array($resultadoQuery);
+                $_SESSION["nuevoTipoDocumento"]=$datosTipoDoc["idTipoDocumento"];
 
-                };
-            }
+            };
 
             //Actualizar el correo del usuario
             if($correo!=""){

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>Confirmar Solicitud</title>
+    <title>Confirmación EnvíoSolicitud | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <script src="../js/script_mostrarMensaje.js"></script>
@@ -25,7 +25,7 @@
 
         try {
             //Server settings
-            $mail->SMTPDebug = 0;                      //Enable verbose debug output
+            $mail->SMTPDebug =0 ;                      //Enable verbose debug output
             $mail->isSMTP();                                            //Send using SMTP
             $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
             $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
@@ -42,7 +42,7 @@
             //Content-Contenido correo
             $mail->isHTML(true);
             $mail->CharSet='UTF-8';                                    //Set email format to HTML
-            $mail->Subject = 'BioUrbis-Solicitud $tipoenviada con éxito';
+            $mail->Subject = 'BioUrbis-Solicitud recibida con éxito';
             $mail->Body    = 
             "<table style= 'max-width: 600px; padding: 10px; margin: 0 auto; border-collapse: collapse; font-family: 'Montserrat';border-radius:5px;'>
                 <tr>
@@ -82,7 +82,33 @@
             
             $mail->send();  
         } catch (Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            $_SESSION["alerta"]="errorAlEnviarCorreo";
+
+            // echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+
+            //Ejecutar mensajes emergentes
+            if(isset($_SESSION["alerta"])){
+                switch ($_SESSION["alerta"]) {
+                    case 'errorAlEnviarCorreo': ?>
+                        <script>
+                            //Mensaje cuando surge un error a la hora de enviar el correo electronico al usuario
+                            mostrarMensaje({
+                                title:"¡Error a la hora de enviar el correo electrónico!",
+                                text:"Recarge la página y vuelva a intentarlo",
+                                icon:"error",
+                                                                        
+                                //Si el usuario acepta volver a enviar el correo elctronico
+                                rutaTrue:"catalogoSemillas.php",
+
+                                //Si el usuario no acepta volver a enviar el correo elctronico
+                                rutaFalse:"catalogoSemillas.php"
+                            })
+                        </script>
+                        <?php
+                    break;
+                }
+                unset($_SESSION["alerta"]);
+            }
         }
     ?> 
 </body>

@@ -1,28 +1,37 @@
 <?php 
+    //Iniciar la sesion para almacenar el estado del formulario
     session_start();
-    include("../db/conexion.php");//Conexión a la base de datos
-    include("../functions/funciones.php");//Funciones del aplicativo
+    //Incluir las funciones del aplicativo
+    include("../functions/funciones.php");
 
+    //Si la variable global estadoForm no se encuentra inicializada, valor por defecto inicio
     if (!isset($_SESSION['estadoForm'])) {
         $_SESSION['estadoForm'] = 'inicio';
     }
 
+    //Si el usuario oprime el botón para verificar su número de identificación y el estado del formulario es inicio
     if(isset($_POST["botonVerificarId"]) && $_SESSION['estadoForm']==="inicio"){
-        $numeroDocumento=$_POST["numDocumento"];//Recuperar identidad del usuario
+        //Recuperar la identidad del usuario
+        $numeroDocumento=$_POST["numDocumento"];
                         
         //Verificar si el usuario existe
-        $resultadoVerificarExistencia=consultarUsuarioExistente($numeroDocumento, $conexion_db);
+        $resultadoVerificarExistencia=consultarUsuarioExistente($numeroDocumento);
 
+        //Si existe algun usuario registrado
         if(mysqli_num_rows($resultadoVerificarExistencia)){
             //Sesión activa del usuario existente
             $_SESSION["numeroDocumento"]=$numeroDocumento;
+
+            //Abrir la conexion a la base de datos
+            $conexion_db=abrirConexionDB();
                         
             //Verificar si el usuario existente tiene su cuenta verificada
             $queryUsuarioVerificado="SELECT * FROM usuario WHERE usuNumeroDocumento='$numeroDocumento' AND usuEstadoCorreo='Verificado'";
             $resultadoUsuarioVerificado=mysqli_query($conexion_db, $queryUsuarioVerificado);
 
-            if(mysqli_num_rows($resultadoUsuarioVerificado)){          
-                include("../php/mailRecuperarContrasena.php"); //Enviar correo con el código de verificación
+            if(mysqli_num_rows($resultadoUsuarioVerificado)){    
+                //Enviar correo con el código de verificación para recuperar la contraseña      
+                include("../php/mailRecuperarContrasena.php"); 
                 $_SESSION['estadoForm'] = 'identifacionOK';
 
             }else{ 
@@ -35,7 +44,7 @@
         }       
     }
 
-    //Si el usuario oprime el botón para verificar el código enviado
+    //Si el usuario oprime el botón para verificar el código enviado y el estado del formulario es identicacionOK
     if(isset($_POST["botonVerificar"]) && $_SESSION['estadoForm'] ==="identifacionOK"){
         $codVerificacionUsuario=$_POST["codVerificacion"]; //Recuperar el código de verificación ingresado por el usuario
         $codVerificacion=$_SESSION["codigoVerificacionC"];//Recuperar el código de verificación generado
@@ -55,8 +64,8 @@
     if(isset($_POST["botonNuevaContrasena"]) && $_SESSION["estadoForm"]==="codigoOK"){
         $nuevaContrasena=$_POST["nuevaContrasena"];//Recuperar la nueva contraseña del usuario
         $numeroDocumentoUsuario=$_SESSION["numeroDocumento"];//Recuperar la identificación del usuario
-
-        $resultadoActualizarContrasena=actualizarContrasena($numeroDocumentoUsuario, $nuevaContrasena, $conexion_db);
+        
+        $resultadoActualizarContrasena=actualizarContrasena($numeroDocumentoUsuario, $nuevaContrasena);
 
         if($resultadoActualizarContrasena==true){
             $nuevaContrasena=password_hash($nuevaContrasena,PASSWORD_BCRYPT);//Encriptar la contraseña del usuario
@@ -76,7 +85,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar Contraseña</title>
+    <title>Recuperar Contraseña | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <link rel="stylesheet" href="../css/style_RecuperarContrasena.css">
@@ -88,6 +97,7 @@
     <div class="container">
         <table>
             <?php 
+                //Mostrar el formulario para ingresar el numero de identificacion del usuario
                 if($_SESSION['estadoForm']==="inicio"){ ?>
                     <th>
                         <!--Formulario para recuperar el número de identidad del usuario-->
@@ -103,6 +113,7 @@
                     </th>
                     <?php
                 }
+                //Mostrar el formulario para ingresar el codigo de verificacion enviado por el correo
                 if($_SESSION['estadoForm'] ==="identifacionOK"){ ?>
                     <!--Formulario para ingresar el código de verifación del correo-->
                     <tr>
@@ -120,6 +131,7 @@
                     </tr>
                     <?php
                 }
+                //Mostrar el formulario para ingresar la nueva contraseña del usuario
                 if($_SESSION["estadoForm"]==="codigoOK"){ ?>
                     <!--Formulario para actualizar la contraseña-->
                     <tr>

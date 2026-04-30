@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión</title>
+    <title>Autenticación | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <link rel="stylesheet" href="../css/style_RegistroAutenticacion.css">
@@ -29,12 +29,9 @@
             </div>
         </div>
         <div class="container-form">
-            <form action="../forms/formAcceso.php" class="sign-in" method="POST">
+            <form action="../forms/formAcceso.php" class="sign-in" method="POST" autocomplete="off">
                 <h2>Iniciar Sesión</h2>
-                <div class="social-networks">
-                    <i class="bi bi-google"></i>
-                    <i class="bi bi-instagram"></i>
-                </div>
+                <a href="../index.php" class="button-regresar"><i class="bi bi-arrow-left-circle"></i> Regresar al inicio</a>
                 <span>Use su número de documento y contraseña</span>
                 <div class="container-input">
                     <i class="bi bi-person-vcard"></i>
@@ -42,9 +39,9 @@
                 </div>
                 <div class="container-input">
                     <i class="bi bi-lock"></i>
-                    <input type="password" placeholder="Contraseña" name="contrasena" required>
+                    <input type="password" placeholder="Contraseña" name="contrasena"  required>
                 </div>
-                <a href="formRecuperarContrasena.php" class='olvidasteContrasena'>¿Olvidaste tu contraseña?</a>
+                <a href="formRecuperarContrasena.php" class='olvidasteContrasena'>¿Olvidó su contraseña?</a>
                 <button class="button" name="botonIniciarSesion" id="botonIniciarSesion">Iniciar Sesión</button>
             </form>
         </div>

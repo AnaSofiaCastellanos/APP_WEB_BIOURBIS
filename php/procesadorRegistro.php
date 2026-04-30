@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Usuarios</title>
+    <title>Registro | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
@@ -13,8 +13,7 @@
 <body>
     <?php 
         //Recuperar la fecha y hora actual del sistema
-        date_default_timezone_set("America/Bogota");
-        $fechaActual=date('Y-m-d');
+        $fechaActual=recuperarFechaActual();
 
         //Si el usuario oprime el botón de registrarse
         if(isset($_POST["botonRegistrarse"])){
@@ -22,7 +21,7 @@
             $numDocumento=$_POST["numDocumento"];
 
             //Consulta para verificar si el número de documento ya se encuentra registrado
-            $resultadoVerificarExistenciaUsuario=consultarUsuarioExistente($numDocumento, $conexion_db);
+            $resultadoVerificarExistenciaUsuario=consultarUsuarioExistente($numDocumento);
 
             //Si encuentra algún registro en la tabla de usuarios
             if(mysqli_num_rows($resultadoVerificarExistenciaUsuario)){
@@ -110,6 +109,7 @@
                     </script>
                     <?php
                 break;
+
                 case "registroExitoso": ?>
                     <script>
                         //Mensaje cuando la información del usuario se registra en la base de datos
@@ -127,6 +127,7 @@
                     </script>
                     <?php
                 break;
+                
                 case "registroFallido": ?>
                     <script>
                         //Mensaje cuando se produce un error a la hora de registrar al usuario

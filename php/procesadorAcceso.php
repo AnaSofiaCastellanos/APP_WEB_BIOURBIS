@@ -1,8 +1,8 @@
 <?php
-    //Incluir la conexión a la base de datos
-    include("../db/conexion.php");
     //Incluir las funciones de la app
     include("../functions/funciones.php");
+
+    $conexion_db=abrirConexionDB();
 
     session_start();
 ?>
@@ -11,7 +11,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión</title>
+    <title>Autenticación | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -24,31 +24,35 @@
         $contrasena=$_POST["contrasena"];
 
         //Encriptar la contraseña del usuario
-        $contrasena=md5($contrasena);
+        $contrasena=md5($contrasena); 
 
         //Consulta para validar si existe un registro en la tabla usuarios con esos datos
         $queryValidarDatos="SELECT * FROM usuario WHERE usuNumeroDocumento='$numDocumento' AND usuContrasena='$contrasena'";
         $resultadoValidarDatos=mysqli_query($conexion_db, $queryValidarDatos);
 
-        //Encriptar la contraseña del usuario
-        $contrasena=password_hash($contrasena,PASSWORD_BCRYPT);
-
         if(mysqli_num_rows($resultadoValidarDatos)){
-
             $datosUsuario=arregloDatos($resultadoValidarDatos);
-            //Validar el estado de la cuenta del usuario
-            if($datosUsuario["usuEstado"]==="Activo"){ ?>
-                <!--Redirección al perfil del usuario-->
-                <script> window.location.replace("../php/homeUsuario.php");</script>
+            if($datosUsuario["usuTipoUsuario"]==="Administrador" && $datosUsuario["usuEstado"]==="Activo"){ ?>
+                <!--Redirección al perfil del administrador-->
+                <script> window.location.replace("../php/homeAdmin.php");</script>
                 <?php
-                $_SESSION["numeroDocumento"]=$numDocumento;
             }else{
-                $_SESSION["alerta"]="cuentaInactiva";
-            }
-            
+                //Validar el estado de la cuenta del usuario
+                if($datosUsuario["usuEstado"]==="Activo"){ ?>
+                    <!--Redirección al perfil del usuario-->
+                    <script> window.location.replace("../php/homeUsuario.php");</script>
+                    <?php
+                }else{
+                    $_SESSION["alerta"]="cuentaInactiva";
+                }
+            }  
+            $_SESSION["numeroDocumento"]=$numDocumento;        
         }else{ 
             $_SESSION["alerta"]="credencialesIncorrectas";
         }
+        
+        //Encriptar la contraseña del usuario
+        $contrasena=password_hash($contrasena,PASSWORD_BCRYPT);
 
         //Ejecutar mensajes emergentes
         if(isset($_SESSION["alerta"])){
@@ -70,6 +74,7 @@
                     </script>
                     <?php
                 break;
+                
                 case "cuentaInactiva": ?>
                     <script>
                         //Mensaje cuando la cuenta del usuario se encuentra inactiva

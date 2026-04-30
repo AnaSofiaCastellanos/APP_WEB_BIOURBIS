@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Semillas</title>
+    <title>Nuestras Semillas | BioUrbis</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Gestion de jardineras" name="keywords">
     <!--Logotipo pestaña-->
@@ -29,69 +29,65 @@
 
     <!-- Template Stylesheet -->
     <link href="../css/style_Index.css" rel="stylesheet">
-</head>
 
+    <!-- Ejecución de Pantallas Emergentes-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/script_mostrarMensaje.js"></script>
+</head>
 <body>
     <?php
-        include ("../functions/funciones.php");//Funciones de la app
-        include("../db/conexion.php");
+        //Incluir las funciones de la app
+        include ("../functions/funciones.php");
 
-        $resultadoConsultarSemillas=consultarSemillas($conexion_db);//Llamar la función que realiza la consulta de todas las semillas
+        //Llamar la función que realiza la consulta de todas las semillas
+        $resultadoConsultarSemillas=consultarSemillas();
 
+        //Si el usuario oprime el boton para enviar la solicitud
         if(isset($_POST["enviarSolicitud"])){
 
-            //Recuperar la fecha y hora actual del sistema
-            date_default_timezone_set('America/Bogota');
-            $fechaActual=date('Y-m-d');
-
+            //Recuperar los datos del formulario
             $nombre=$_POST["username"];
             $correo=$_POST["email"];
             $semilla=$_POST["seed"];
+            $semilla=ucfirst(strtolower($semilla));
             $mensaje=$_POST["message"];
 
+            //Recuperar el tipo de solicitud enviada
             $tipoSolicitud=$_POST["enviarSolicitud"];
 
-            if(isset($_SESSION["numeroDocumento"])){
-                $numeroDocumento=$_SESSION["numeroDocumento"];
+            //Consulta para verificar si la semilla ya se encuentra registrada en el sistema
+            $resultadoConsultarExistenciaSemilla=consultarExistenciaSemillaPorNombre($semilla);
 
-                $queryInsertarSolicitud="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado, usuNumeroDocumento )
-                VALUES('$fechaActual', '$tipoSolicitud', '$mensaje', 'Pendiente', '$numeroDocumento')";
-                $resultadoInsertarSolicitud=mysqli_query($conexion_db, $queryInsertarSolicitud);
-
+            //Evalua si existe algun registro con ese nombre
+            if(mysqli_num_rows($resultadoConsultarExistenciaSemilla)){
+                //Alerta para informar que la semilla ya se encuentra registrada en el sistema
+                $_SESSION["alerta"]="semillaExistente";
             }else{
-                $queryInsertarSolicitud="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado)
-                VALUES('$fechaActual', '$tipoSolicitud', '$mensaje', 'Pendiente')";
-                $resultadoInsertarSolicitud=mysqli_query($conexion_db, $queryInsertarSolicitud);
-            }
+                //Consulta para insertar la solicitud en la base de datos
+                $resultadoInsertarSolicitud=registrarSolicitud($tipoSolicitud, $mensaje);
 
-            if($resultadoInsertarSolicitud==true){
-                //Enviar correo electrónico para confirmar su solicitud 
-                include("mailConfirmacionSolicitud.php");
-            }else{
-                $_SESSION["alerta"]="errorConsulta";
+                if($resultadoInsertarSolicitud==true){
+                    //Enviar correo electrónico para confirmar su solicitud 
+                    include("mailConfirmacionSolicitud.php");
+                }else{
+                    $_SESSION["alerta"]="errorConsulta";
+                }
             }
         }
     ?>
-    <div class="container-xxl bg-white p-0">
-        <!-- Spinner Start -->
-       <!--  <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div> -->
-        <!-- Spinner End -->
-
+    <div class="container-fluid bg-white p-0">
         <!-- Navbar Start -->
         <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-            <a href="index.html" class="logo"><image src="../images/img_logotipo.png" width="80px" height="80px" alt="Logotipo de la empresa BioUrbis"></image></a>
+            <a href="../index.php" class="logo"><image src="../images/img_logotipo.png" width="80px" height="80px"></image></a>
+            <a href="../index.php" class="logo"><span class="nombre-logo">BioUrbis</span></a>
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-auto">
-                    <a href="../index.php" class="nav-item nav-link">Home</a>
+                    <a href="../index.php" class="nav-item nav-link">Inicio</a>
                     <a href="../sobreNosotros.html" class="nav-item nav-link">Sobre Nosotros</a>
-                    <a href="catalogoSemillas.php" class="nav-item nav-link active">Semillas</a>
+                    <a href="catalogoSemillas.php" class="nav-item nav-link active">Nuestras Semillas</a>
                    
                 </div>
                 <a href="../forms/formRegistro.php" class="btn btn-primary rounded-pill px-3 d-none d-lg-block">¡Únete a Nosotros!<i class="fa fa-arrow-right ms-3"></i></a>
@@ -102,7 +98,7 @@
         <!-- Page Header End -->
         <div class="container-xxl py-5 page-header position-relative mb-5" style=" background-color:rgb(38,41,22);">
             <div class="container py-5">
-                <h1 class="display-2 text-white animated slideInDown mb-4">Semillas</h1>
+                <h1 class="display-2 text-white animated slideInDown mb-4">Nuestras Semillas</h1>
                 
             </div>
         </div>
@@ -112,18 +108,21 @@
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">Nuestras Semillas</h1>
-                    <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
+                    <h1 class="mb-3">Aquí encontrarás...</h1>
+                    <p>
+                        Un catálogo de semillas cuidadosamente seleccionadas, ideales para jardineras caseras. 
+                    </p>
                 </div>
                 <div class="row g-4">
                     <?php 
+                        //Mostrar todas las semillas registradas en la base de datos
                         while ($datosSemillas=mysqli_fetch_array($resultadoConsultarSemillas)){
                             ?>
                             <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                                 <div class="classes-item" >
                                     <div class="rounded-circle w-75 mx-auto p-3" style=" background-color:rgb(234,213,166);">
                                         <a class="d-block text-center h3 mt-3 mb-4" href="fichaTecnicaSemillas.php?idSemilla=<?php echo $datosSemillas["idSemilla"]?>" target="_blank"><input type="submit" value="<?php $datosSemillas["idSemilla"]?>" name="idSemilla" id="idSemilla" >
-                                            <img class="img-fluid rounded-circle" src="../images/semillas/img_<?php echo $datosSemillas["semImagen"]?>" alt="Imagen de referencia de la semilla <?php echo $datosSemillas["semNombre"]?>">
+                                            <img class="img-fluid2 rounded-circle" src="../images/semillas/img_<?php echo $datosSemillas["semImagen"]?>" alt="Imagen de referencia de la semilla <?php echo $datosSemillas["semNombre"]?>">
                                         </a>
                                     </div>
                                     <div class="rounded p-4 pt-5 mt-n5" style=" background-color:rgb(234,213,166);">
@@ -151,7 +150,7 @@
                     <div class="row g-0">
                         <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                             <div class="h-100 d-flex flex-column justify-content-center p-5">
-                                <h1 class="mb-4">Solicite su propia Semilla</h1>
+                                <h1 class="mb-4">Solicite su propia semilla</h1>
                                 <form action="catalogoSemillas.php" method="POST">
                                     <div class="row g-3">
                                         <div class="col-sm-6">
@@ -187,7 +186,7 @@
                         </div>
                         <div class="col-lg-6 wow fadeIn" data-wow-delay="0.5s" style="min-height: 400px;">
                             <div class="position-relative h-100">
-                                <img class="position-absolute w-100 h-100 rounded" src="../images/contact.jpg" style="object-fit: cover;">
+                                <img class="position-absolute w-100 h-100 rounded" src="../images/img_solicitarSemilla.jpg" style="object-fit: cover;">
                             </div>
                         </div>
                     </div>
@@ -202,8 +201,7 @@
                 <div class="row g-5">
                     <div class="col-lg-3 col-md-6">
                         <h3 class="text-white mb-4">Contacto</h3>
-                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Santa Lucía</p>
-                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+57 1233</p>
+                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Bogotá, DC</p>
                         <p class="mb-2"><i class="fa fa-envelope me-3"></i>biourbiscompany@gmail.com</p>
                         <div class="d-flex pt-2">
                             <a class="btn btn-outline-light btn-social" href="https://www.facebook.com/groups/freewebsitecode"><i class="fab fa-twitter"></i></a>
@@ -213,9 +211,9 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <h3 class="text-white mb-4">Quick Links</h3>
+                        <h3 class="text-white mb-4">Más información</h3>
                         <a class="btn btn-link text-white-50" href="../sobreNosotros.html">Sobre Nosotros</a>
-                        <a class="btn btn-link text-white-50" href="">Contacto</a>
+                        <a class="btn btn-link text-white-50" href="mailto:biourbiscompany@gmail.com">Contáctanos</a>
                     </div> 
                     </div>
                 </div>
@@ -238,8 +236,7 @@
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
 
-    <?php 
-        
+    <?php      
         //Ejecutar mensajes emergentes
         if(isset($_SESSION["alerta"])){
             switch ($_SESSION["alerta"]) {
@@ -255,6 +252,26 @@
                             rutaTrue:"catalogoSemillas.php",
 
                             //Si el usuario no acepta volver a enviar la solicitud
+                            rutaFalse:"catalogoSemillas.php"
+                        })
+                    </script>
+                    <?php
+                break;
+
+                case 'semillaExistente': ?>
+                    <script>
+                        //Mensaje cuando surge el usuario solicita una semilla que ya existe
+                        mostrarMensaje({
+                            title:"¡Semilla ya registrada!",
+                            text:"La semilla que intenta solicitar ya se encuentra en nuestro sistema",
+                            icon:"error",
+
+                            showCancelButton: false, 
+
+                            //Si el usuario acepta volver a enviar una nueva solicitud
+                            rutaTrue:"catalogoSemillas.php",
+
+                            //Si el usuario no acepta volver a enviar una nueva solicitud
                             rutaFalse:"catalogoSemillas.php"
                         })
                     </script>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>Confirmar Publicación Reseña</title>
+    <title>Confirmación Publicación Reseña | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <script src="../js/script_mostrarMensaje.js"></script>
@@ -17,9 +17,9 @@
         use PHPMailer\PHPMailer\SMTP;
         use PHPMailer\PHPMailer\Exception;
 
-        require '../lib/phpMailer/Exception.php';
-        require '../lib/phpMailer/PHPMailer.php';
-        require '../lib/phpMailer/SMTP.php';
+        require 'lib/phpMailer/Exception.php';
+        require 'lib/phpMailer/PHPMailer.php';
+        require 'lib/phpMailer/SMTP.php';
         //Create an instance; passing `true` enables exceptions
         $mail = new PHPMailer(true);
 
@@ -80,7 +80,33 @@
             
             $mail->send();  
         } catch (Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            $_SESSION["alerta"]="errorAlEnviarCorreo";
+
+            // echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+
+            //Ejecutar mensajes emergentes
+            if(isset($_SESSION["alerta"])){
+                switch ($_SESSION["alerta"]) {
+                    case 'errorAlEnviarCorreo': ?>
+                        <script>
+                            //Mensaje cuando surge un error a la hora de enviar el correo electronico al usuario
+                            mostrarMensaje({
+                                title:"¡Error a la hora de enviar el correo electrónico!",
+                                text:"Recarge la página y vuelva a intentarlo",
+                                icon:"error",
+                                                                        
+                                //Si el usuario acepta volver a enviar el correo elctronico
+                                rutaTrue:"../index.php",
+
+                                //Si el usuario no acepta volver a enviar el correo elctronico
+                                rutaFalse:"../index.php"
+                            })
+                        </script>
+                        <?php
+                    break;
+                }
+                unset($_SESSION["alerta"]);
+            }
         }
     ?> 
 </body>

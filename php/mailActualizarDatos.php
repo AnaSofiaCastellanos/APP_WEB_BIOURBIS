@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>Actualizar Datos</title>
+    <title>Verificar Actualización de Datos | BioUrbis</title>
     <!--Logotipo pestaña-->
     <link rel="shortcut icon" href="../images/img_logotipo.png" type="image/x-icon">
     <script src="../js/script_mostrarMensaje.js"></script>
@@ -23,6 +23,7 @@
         }else{
             //Si la función random_int existe
             if(function_exists("random_int")){
+                
                 $codVerificacion=random_int(1000,9999);
             }else{
                 $codVerificacion=mt_rand(1000,9999);
@@ -33,7 +34,7 @@
             $_SESSION["numeroDocumento"]=$usuarioActivo;
             
             //Llamar a la función para consultar los datos de usuario registrado
-            $datosUsuario=consultarDatosUsuario($usuarioActivo, $conexion_db);
+            $datosUsuario=consultarDatosUsuario($usuarioActivo);
             
             //Recuperar correo y nombre completo del usuario
             $correoUsuario=$datosUsuario["usuCorreo"];
@@ -106,7 +107,33 @@
                     <script> window.location.replace("../php/procesadorActualizarDatos.php")</script>
                 <?php               
             } catch (Exception $e) {
-                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+               $_SESSION["alerta"]="errorAlEnviarCorreo";
+
+                // echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+
+                //Ejecutar mensajes emergentes
+                if(isset($_SESSION["alerta"])){
+                    switch ($_SESSION["alerta"]) {
+                        case 'errorAlEnviarCorreo': ?>
+                            <script>
+                                //Mensaje cuando surge un error a la hora de enviar el correo electronico al usuario
+                                mostrarMensaje({
+                                    title:"¡Error a la hora de enviar el correo electrónico!",
+                                    text:"Recarge la página y vuelva a intentarlo",
+                                    icon:"error",
+                                                                        
+                                    //Si el usuario acepta volver a enviar el correo elctronico
+                                    rutaTrue:"homeUsuario.php",
+
+                                    //Si el usuario no acepta volver a enviar el correo elctronico
+                                    rutaFalse:"homeUsuario.php"
+                                })
+                            </script>
+                            <?php
+                        break;
+                    }
+                    unset($_SESSION["alerta"]);
+                }
             }
         }
     ?> 
