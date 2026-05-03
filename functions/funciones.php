@@ -45,6 +45,22 @@
 
         return $diferencia->days;
     }
+
+    function calcularPromedio($arreglo){
+        if(count($arreglo) == 0){
+            return 0; // evita error
+        }
+
+        $i = 0;
+        $total = 0;
+
+        while($i < count($arreglo)){
+            $total += floatval($arreglo[$i]); // asegura que sea número
+            $i++;
+        }
+
+        return round($total / count($arreglo), 2);
+    }
     /* SEMILLAS */
 
     //Función para consultar todas las semillas de la base de datos
@@ -455,11 +471,12 @@
     function consultarFactoresExternosPorJardinera($idJardinera){
         $conexion=abrirConexionDB();
 
-        $query="SELECT * FROM factores_externos WHERE idJardinera='$idJardinera'";
+        $query="SELECT * FROM factores_externos WHERE idJardinera='$idJardinera' ORDER BY idFactoresExternos ASC";
         $resultado=mysqli_query($conexion, $query);
 
         return $resultado;
     }
+    
     
     //Funcion para actualizar el estado del factor externo tras ser evaluado para generar una alerta
     function actualizarEstadoFactoresExternos($idFactoresExternos){
@@ -474,12 +491,13 @@
     /* ALERTAS */
 
     //Funcion para registrar la alerta generada
-    function registrarAlerta($descripcion, $valorRegistrado, $rangoRecomendado, $idJardinera){
+    function registrarAlerta( $tipo, $descripcion, $recomendacion, $valorRegistrado, $rangoRecomendado, $idJardinera){
         $conexion=abrirConexionDB();
 
         $fechaActual=recuperarFechaActual();
 
-        $query="INSERT INTO alerta (alerFecha, alerDescripcion, alerValorRegistrado, alerRangoRecomendado, idJardinera) VALUES('$fechaActual','$descripcion', '$valorRegistrado', '$rangoRecomendado', '$idJardinera')";
+        $query="INSERT INTO alerta (alerFecha, alerTipo, alerDescripcion, alerRecomendacion, alerValorRegistrado, alerRangoRecomendado, idJardinera) 
+        VALUES('$fechaActual','$tipo','$descripcion', '$recomendacion', '$valorRegistrado', '$rangoRecomendado', '$idJardinera')";
         $resultado=mysqli_query($conexion, $query);
 
         return $resultado;
@@ -500,6 +518,20 @@
         return $resultado;
     }
 
+    function existeAlertaPorTipo($tipo, $idJardinera){
+        $conexion = abrirConexionDB();
+
+        $query = "SELECT idAlerta FROM alerta 
+                WHERE alerTipo = '$tipo' 
+                AND idJardinera = '$idJardinera'
+                LIMIT 1";
+
+        $resultado = mysqli_query($conexion, $query);
+
+        return mysqli_num_rows($resultado) > 0;
+    }
+
+   
     //Funcion para actualizar el estado de la alerta
     function actualizarEstadoAlerta($idAlerta){
         $conexion=abrirConexionDB();
@@ -541,6 +573,7 @@
         }   
     }
 
+    //Funcion para actualizar el estado del registro de una evolucion de una jardinera
     function actualizarEstadoEvolucionJardinera($idJardinera){
         $conexion=abrirConexionDB();
 
@@ -554,9 +587,21 @@
     function consultarEvolucionPorJardinera($idJardinera){
         $conexion=abrirConexionDB();
 
-        $query="SELECT segJardineraFecha, segJardineraNota, segJardineraImagen, segJardineraPorcentaje FROM seguimiento_jardinera WHERE idJardinera='$idJardinera'";
+        $query="SELECT segJardineraFecha, segJardineraNota, segJardineraImagen, segJardineraPorcentaje FROM seguimiento_jardinera WHERE idJardinera='$idJardinera' ORDER BY segJardineraFecha ASC";
         $resultado=mysqli_query($conexion, $query);
 
         return $resultado;
+    }
+
+    //Funcion para calcular la tendencia de crecimiento de una jardinera
+    function calcularTendencia($porcentajes){
+
+        $tendencia = [];
+
+        for($i = 1; $i < count($porcentajes); $i++){
+            $tendencia[] = $porcentajes[$i] - $porcentajes[$i - 1];
+        }
+
+        return $tendencia;
     }
 ?>

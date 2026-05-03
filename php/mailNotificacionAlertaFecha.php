@@ -26,14 +26,13 @@
         $correo=$datosUsuario["usuCorreo"];
         $nombre=$datosUsuario["usuNombre"];
 
-        //Recuperar los valores de la alerta de tipo factores externos
+        //Recuperar los valores de la alerta de tipo fechas
         $nombreJardinera=$row['jarNombre'];
         $semilla= $row['semNombre'];
         $fechaAlerta=$row['alerFecha']; 
         $descripcionAlerta=$row['alerDescripcion']; 
         $recomendacionAlerta=$row['alerRecomendacion'];
-        $valorRegistrado= $row['alerValorRegistrado'];
-        $rangoRecomendado=$row['alerRangoRecomendado']; 
+
 
         require_once '../lib/phpMailer/Exception.php';
         require_once '../lib/phpMailer/PHPMailer.php';
@@ -83,7 +82,7 @@
                             </h3>
                             <div style='color:black;'>
                                 <p>
-                                    Debido a que se han registrado factores externos inadecuados para el crecimiento de su planta.
+                                    Debido a la proximidad de fechas importantes e influyentes para el crecimiento de su planta.
                                 </p>
                             </div>
 
@@ -93,11 +92,9 @@
                                 <p><strong>Fecha:</strong> $fechaAlerta</p>
                                 <p><strong>Alerta:</strong> $descripcionAlerta</p>
                                 <p><strong>Recomendación:</strong> $recomendacionAlerta</p>
-                                <p><strong>Valor Obtenido:</strong> $valorRegistrado º</p>
-                                <p><strong>Rango Recomendado:</strong> $rangoRecomendado</p>
 
                                 <p style='margin-top:15px;'>
-                                    Le recomendamos revisar su jardinera lo antes posible para evitar afectaciones en su crecimiento.
+                                    Le recomendamos registrar los cambios percibidos de su jardinera en este tiempo para identificar su nueva evolución
                                 </p>
                             </div>
 

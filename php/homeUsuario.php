@@ -19,6 +19,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/script_mostrarMensaje.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
 <body>
     <?php 
@@ -180,22 +181,74 @@
             $resultadoConsultarAlertas=consultarAlertas($usuarioActivo);
 
             $alertas = [];
+            //Arreglo con los tipos de alertas de factores externos permitidos
+            $alertasFactoresExternos=[
+                "bajaHumedad",
+                "altaumedad", 
+                "bajaTemperatura", 
+                "altaTemperatura", 
+                "bajaCantidadAgua", 
+                "altaCantidadAgua", 
+                "climaInadecuado"
+            ];
+
+            //Arreglo con los tipos de alertas de fecha permitidos
+            $alertasFechas=[
+                "proximoDesarrolloVegetativo",
+                "enGerminacion",
+                "terminandoGerminacion",
+
+                "proximoFloracion",
+                "enDesarrolloVegetativo",
+                "terminandoDesarrolloVegetativo",
+
+                "proximoLlenadoGranos",
+                "enFloracion",
+                "terminandoFloracion",
+
+                "proximoCosecha",
+                "enLlenadoGranos",
+                "terminandoLlenadoGranos",
+
+                "proximoCulminarCiclo",
+                "enCosecha",
+                "terminandoCosecha"
+            ];
 
             //Mientras el usuario tenga alertas activas
             while($row = mysqli_fetch_array($resultadoConsultarAlertas)){
-                //Almacenar el contenido de la alerta en un arreglo unidimensional
-                $alertas[] = [
-                    "id" => $row["idAlerta"],
-                    "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
-                            <b>Semilla: </b> {$row['semNombre']}<br>
-                            <b>Fecha: </b> {$row['alerFecha']}<br>
-                            <b>Alerta: </b> {$row['alerDescripcion']}<br>
-                            <b>Valor Obtenido: </b> {$row['alerValorRegistrado']}º<br>
-                            <b>Rango Recomendado: </b> {$row['alerRangoRecomendado']}"
-                ];
+                //Evaluar si el tipo de la alerta se encuentra dentro de los tipos permitidos de factores externos
+                if(in_array($row["alerTipo"], $alertasFactoresExternos) && $row["alerEstado"]=="Activa"){
+                    //Almacenar el contenido de la alerta en un arreglo unidimensional
+                    $alertas[] = [
+                        "id" => $row["idAlerta"],
+                        "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
+                                <b>Semilla: </b> {$row['semNombre']}<br>
+                                <b>Fecha: </b> {$row['alerFecha']}<br>
+                                <b>Alerta: </b> {$row['alerDescripcion']}<br>
+                                <b>Recomendación: </b> {$row['alerRecomendacion']}<br>
+                                <b>Valor Obtenido: </b> {$row['alerValorRegistrado']}º<br>
+                                <b>Rango Recomendado: </b> {$row['alerRangoRecomendado']}"
+                    ];
 
-                //Enviar correo de notificación al usuario por cada alerta activa
-                include("../php/mailNotificacionAlerta.php");
+                    //Enviar correo de notificación al usuario por cada alerta activa
+                    include("../php/mailNotificacionAlerta.php");
+
+                //Evaluar si el tipo de la alerta se encuentra dentro de los tipos permitidos de fechas
+                }elseif(in_array($row["alerTipo"], $alertasFechas) && $row["alerEstado"]=="Activa"){
+                    //Almacenar el contenido de la alerta en un arreglo unidimensional
+                    $alertas[] = [
+                        "id" => $row["idAlerta"],
+                        "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
+                                <b>Semilla: </b> {$row['semNombre']}<br>
+                                <b>Fecha: </b> {$row['alerFecha']}<br>
+                                <b>Alerta: </b> {$row['alerDescripcion']}<br>
+                                <b>Recomendación: </b> {$row['alerRecomendacion']}<br>"
+                    ];
+
+                    //Enviar correo de notificación al usuario por cada alerta activa
+                    include("../php/mailNotificacionAlertaFecha.php");
+                }  
             }
         }
 
@@ -418,9 +471,7 @@
                         body: formData
                     });
 
-                    window.location.href = "homeUsuario.php?page=profile";
-
-                    return; 
+                    continue; 
                 }
             }
         }
@@ -593,13 +644,6 @@
                                 <i class="fas fa-chart-bar"></i>
                                 <span>Generar Reporte</span>
                             </a>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <h2>Actividad Reciente</h2>
-                        <div class="activity-list" id="activityList">
-                            <!-- Activities will be populated by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -837,49 +881,124 @@
                         <p>Supervisa el estado de salud de tus jardineras</p>
                     </div>
 
-                    <div class="monitoring-grid">
-                        <div class="monitoring-card">
-                            <h3>Estado General</h3>
-                            <div class="status-indicator good">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Excelente</span>
-                            </div>
-                            <p>Todas las jardineras están en buen estado</p>
-                        </div>
+                    <?php 
+                        //Consulta de las jardineras activas del usuario
+                        $resultadoConsultarJardineras=consultarJardineras($usuarioActivo);
+                        echo "Mis jardineras <br>";
+                        $i=1;
+                        while($datosJardinera=mysqli_fetch_array($resultadoConsultarJardineras)){
+                            $idJardinera=$datosJardinera["idJardinera"];
 
-                        <div class="monitoring-card">
-                            <h3>Riego</h3>
-                            <div class="progress-bar">
-                                <div class="progress" style="width: 75%"></div>
-                            </div>
-                            <p>75% de jardines regados hoy</p>
-                        </div>
+                            $resultadoConsultarEvolucionJardinera=consultarEvolucionPorJardinera($idJardinera);
 
-                        <div class="monitoring-card">
-                            <h3>Temperatura</h3>
-                            <div class="temperature">
-                                <i class="fas fa-thermometer-half"></i>
-                                <span>24°C</span>
-                            </div>
-                            <p>Temperatura óptima</p>
-                        </div>
+                            $fechas = [];
+                            $porcentajes=[];
 
-                        <div class="monitoring-card">
-                            <h3>Humedad</h3>
-                            <div class="humidity">
-                                <i class="fas fa-tint"></i>
-                                <span>65%</span>
-                            </div>
-                            <p>Nivel adecuado</p>
-                        </div>
-                    </div>
+                            while($datosEvolucionJardinera=mysqli_fetch_assoc($resultadoConsultarEvolucionJardinera)){
+                                $fechas[] = $datosEvolucionJardinera['segJardineraFecha'];
+                                $porcentajes[] = $datosEvolucionJardinera['segJardineraPorcentaje'];
+                            }
 
-                    <div class="section">
-                        <h2>Alertas y Recomendaciones</h2>
-                        <div class="alerts-list" id="alertsList">
-                            <!-- Alerts will be populated by JavaScript -->
-                        </div>
-                    </div>
+                            $resultadoConsultarFactoresExternos=consultarFactoresExternosPorJardinera($idJardinera);
+
+                            $temp = [];
+                            $hum = [];
+                            $agua = [];
+
+                            while($datosFactoresExternos= mysqli_fetch_assoc($resultadoConsultarFactoresExternos)){
+                                $temp[] = $datosFactoresExternos['factTemperatura'];
+                                $hum[] = $datosFactoresExternos['factHumedad'];
+                                $agua[] = $datosFactoresExternos['factCantidadAgua'];
+                            }
+
+                            $promedioTemperatura= calcularPromedio($temp);
+                            $promedioHumedad = calcularPromedio($hum);
+                            $promedioAgua= calcularPromedio($agua);
+
+                            $indiceSalud = ($promedioTemperatura * 0.4) + ($promedioHumedad * 0.4) + ($promedioAgua * 0.2);
+
+                            $tendencia = calcularTendencia($porcentajes);
+
+                            echo "Jardinera: ", $datosJardinera["jarNombre"];
+                             
+                            ?>
+
+                            <div class="monitoring-grid">
+
+                                <div class="monitoring-card">
+                                    <h3>Porcentaje de Evolución</h3>
+                                    <p><?php echo $datosJardinera["jarPorcentajeEvolucion"]?>%</p>
+                                </div>
+
+                                <div class="monitoring-card">
+                                    <h3>Promedio Temperatura</h3>
+                                    <p><?php echo $promedioTemperatura; ?>°C</p>
+                                </div>
+
+                                <div class="monitoring-card">
+                                    <h3>Promedio Humedad</h3>
+                                    <p><?php echo $promedioHumedad; ?>%</p>
+                                </div>
+
+                                <div class="monitoring-card">
+                                    <h3>Promedio Agua</h3>
+                                    <p><?php echo $promedioAgua; ?>ml</p>
+                                </div>
+
+                                <div class="monitoring-card">
+                                    <h3>Indice de Salud</h3>
+                                    <p><?php echo $indiceSalud; ?>%</p>
+                                </div>
+
+                            </div>
+
+                            <div class="section">
+                                <h2>Factores Externos</h2>
+                                <canvas id="factoresChart<?php echo $i; ?>"></canvas>
+                            </div>
+
+                            <div class="section">
+                                <h2>Tendencia de Crecimiento</h2>
+                                <canvas id="tendenciaChart<?php echo $i; ?>"></canvas>
+                            </div>
+
+                            <div class="section">
+                                <h2>Alertas y Recomendaciones</h2>
+                                <?php
+                                    //Consultar las alertas activas de la jardinera
+                                    $resultadoConsultarAlertas=consultarAlertas($usuarioActivo);
+                                        
+                                    //Si existe algun registro de alerta activa
+                                    if(mysqli_num_rows($resultadoConsultarAlertas)){
+                                        //Mientras existan registros de alertas 
+                                        while($datosAlertas=mysqli_fetch_array($resultadoConsultarAlertas)){
+                                            echo "Fecha: ", $datosAlerta["alerFecha"], "<br>";
+                                            echo "Mensaje: ", $datosAlerta["alerDescripcion"], "<br>";
+                                        }
+                                    }else{
+                                        echo "La jardinera no tiene alertas activas";
+                                    }
+                                ?>
+                            </div>
+
+                            <script>
+                                window.jardineras = window.jardineras || [];
+
+                                window.jardineras.push({
+                                    id: <?php echo $i; ?>,
+                                    fechas: <?php echo json_encode($fechas); ?>,
+                                    crecimiento: <?php echo json_encode($porcentajes); ?>,
+                                    temperatura: <?php echo json_encode($temp); ?>,
+                                    humedad: <?php echo json_encode($hum); ?>,
+                                    agua: <?php echo json_encode($agua); ?>,
+                                    tendencia: <?php echo json_encode($tendencia); ?>
+                                });
+                            </script>
+                            
+                            <?php
+                            $i++;
+                        }
+                    ?>
                 </div>
             </div>
 
@@ -1202,8 +1321,7 @@
             </form>
         </div>
     </div>
-    
-    
+
     <script src="../js/scripts_HomeUsuario.js"></script>
     <?php 
     //Ejecutar mensajes emergentes

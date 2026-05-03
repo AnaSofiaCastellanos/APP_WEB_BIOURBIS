@@ -65,7 +65,113 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("JS cargado ✅"); 
   initializeEventListeners()
   populateContent()
+  generarGraficos()
 })
+
+// ================== INICIO ==================
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("JS cargado ✅");
+
+  initializeEventListeners();
+  populateContent();
+
+  generarGraficos();
+});
+
+// ================== FUNCIÓN PRINCIPAL ==================
+function generarGraficos(){
+  if (!window.jardineras || window.jardineras.length === 0) {
+    console.log("No hay jardineras ❌");
+    return;
+  }
+
+  console.log("Jardineras:", window.jardineras);
+
+  window.jardineras.forEach(j => {
+
+    const canvasFactores = document.getElementById("factoresChart" + j.id);
+    const canvasTendencia = document.getElementById("tendenciaChart" + j.id);
+
+    // ================== 🌡️ FACTORES ==================
+    if (canvasFactores && j.temperatura && j.humedad && j.agua) {
+
+      const ctx = canvasFactores.getContext("2d");
+
+      // destruir gráfico previo si existe
+      if (Chart.getChart(canvasFactores)) {
+        Chart.getChart(canvasFactores).destroy();
+      }
+
+      const length = Math.max(
+        j.temperatura.length,
+        j.humedad.length,
+        j.agua.length
+      );
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: Array.from({ length }, (_, i) => "R" + (i + 1)),
+          datasets: [
+            {
+              label: "Temperatura",
+              data: j.temperatura,
+              borderColor: "rgba(255,140,0,1)",
+              backgroundColor: "rgba(255,140,0,0.5)",
+              tension: 0.3
+            },
+            {
+              label: "Humedad",
+              data: j.humedad,
+              borderColor: "rgba(0,150,255,1)",
+              backgroundColor: "rgba(0,150,255,0.5)",
+              tension: 0.3
+            },
+            {
+              label: "Agua",
+              data: j.agua,
+              borderColor: "rgba(0,200,100,1)",
+              backgroundColor: "rgba(0,200,100,0.5)",
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#2c3e50"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // ================== 📊 TENDENCIA ==================
+    if (canvasTendencia) {
+
+      const datos = j.tendencia && j.tendencia.length > 0 
+          ? j.tendencia 
+          : [0];
+
+      new Chart(canvasTendencia, {
+        type: "bar",
+        data: {
+          labels: datos.map((_, i) => "Cambio " + (i + 1)),
+          datasets: [{
+            label: "Tendencia de crecimiento",
+            data: datos,
+            backgroundColor: "#6C5CE7"
+          }]
+        }
+      });
+    }
+
+  });
+  
+}
 
 // ================== EVENTOS ==================
 function initializeEventListeners() {
@@ -609,5 +715,6 @@ function cargarPreguntas(idFase) {
       document.getElementById("contenedorPreguntas").innerHTML = html;
     });
 }
+
 
 
