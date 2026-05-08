@@ -381,12 +381,23 @@ h6,
 
 
 /*** Team ***/
+.team-item {
+    text-align: center;
+    padding-top: 1.5rem;
+}
+
+.team-item img {
+    display: block;
+    margin: 0 auto;
+    max-width: 220px;
+}
+
 .team-item .team-text {
-    position: absolute;
-    width: 250px;
-    height: 250px;
-    bottom: 0;
-    right: 0;
+    position: relative;
+    width: 100%;
+    max-width: 280px;
+    margin: 1rem auto 0;
+    padding: 1.3rem 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -395,6 +406,7 @@ h6,
     border: 17px solid var(--light);
     border-radius: 250px;
     transition: .5s;
+    box-sizing: border-box;
 }
 
 .team-item:hover .team-text {

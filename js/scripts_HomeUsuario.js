@@ -37,7 +37,12 @@ const elements = {
   cancelAddGarden: document.getElementById("cancelAddGarden"),
   addNewGardenBtn: document.getElementById("addNewGardenBtn"),
   generateReportBtn: document.getElementById("generateReportBtn"),
-  
+  reportType: document.getElementById("reportType"),
+  reportGarden: document.getElementById("reportGarden"),
+  reportCustomRange: document.getElementById("reportCustomRange"),
+  reportStartDate: document.getElementById("reportStartDate"),
+  reportEndDate: document.getElementById("reportEndDate"),
+
   updateGardenModal: document.getElementById("updateGardenModal"),
   closeUpdateGarden: document.getElementById("closeUpdateGarden"),
   cancelUpdateGarden: document.getElementById("cancelUpdateGarden"),
@@ -67,16 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
   populateContent()
   generarGraficos()
 })
-
-// ================== INICIO ==================
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("JS cargado ✅");
-
-  initializeEventListeners();
-  populateContent();
-
-  generarGraficos();
-});
 
 // ================== FUNCIÓN PRINCIPAL ==================
 function generarGraficos(){
@@ -178,7 +173,6 @@ function initializeEventListeners() {
   // ================== SIDEBAR ==================
   elements.menuToggle?.addEventListener("click", toggleSidebar)
   elements.overlay?.addEventListener("click", closeSidebar)
-
   const reportButton = elements.generateReportBtn || document.getElementById("generateReportBtn")
   reportButton?.addEventListener("click", generateGardenReportPdf)
 
@@ -383,7 +377,7 @@ function populateReports() {
     item.className = 'report-item'
     item.innerHTML = `
       <div class="report-header">
-        <h3>Jardinera ${index + 1}: ${garden.jarNombre || 'Sin nombre'}</h3>
+        <h3>Jardinera: ${garden.jarNombre || 'Sin nombre'}</h3>
         <span class="report-status completed">${garden.faseNombre || 'Fase desconocida'}</span>
       </div>
       <div class="report-description">
@@ -441,7 +435,7 @@ function filterGardenReportData() {
 
     let gardenMatches = true
     if (reportGarden !== 'all') {
-      gardenMatches = garden.idSemilla && garden.idSemilla.toString() === reportGarden
+      gardenMatches = garden.idJardinera && garden.idJardinera.toString() === reportGarden
     }
 
     return dateMatches && gardenMatches
@@ -452,18 +446,38 @@ function applyReportFilters() {
   populateReports()
 }
 
-function generateGardenReportPdf() {
-  console.log('Generar reporte PDF', window.gardenReportData, window.userReportData)
+async function generateGardenReportPdf() {
+  console.log('Generar reporte PDF', window.gardenReportData, window.userReportData, window.alertas)
 
   const selectedGardens = filterGardenReportData()
   if (!selectedGardens || selectedGardens.length === 0) {
-    showNotification('No hay jardineras que cumplan con el filtro seleccionado.')
+    mostrarMensaje({
+      title:"¡Error a la hora de generar el reporte!",
+      text:"No hay jardineras que cumplan con el filtro seleccionado para generar el reporte. Por favor, ajusta los filtros o agrega jardineras para poder generar el reporte correctamente",
+      icon:"error",
+                                                            
+      //Si el usuario acepta ajustar los filtros o agregar jardineras
+      rutaTrue:"homeUsuario.php?page=reports",
+
+      //Si el usuario no acepta ajustar los filtros o agregar jardineras
+      rutaFalse:"homeUsuario.php?page=reports"
+    })
     return
   }
 
   const jsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF
   if (!jsPDFConstructor) {
-    showNotification('La librería jsPDF no está cargada. Verifica la conexión o el archivo local.')
+    mostrarMensaje({
+      title:"¡Error a la hora de generar el reporte!",
+      text:"La librería jsPDF no está cargada, le sugerimos recargar la página para intentar nuevamente",
+      icon:"error",
+                                                            
+      //Si el usuario acepta recargar la pagina 
+      rutaTrue:"homeUsuario.php?page=reports",
+
+      //Si el usuario no acepta recargar la pagina
+      rutaFalse:"homeUsuario.php?page=reports"
+    })
     return
   }
 
@@ -481,59 +495,88 @@ function generateGardenReportPdf() {
     }
   }
 
-  // Header
-  doc.setFillColor(39, 105, 217)
-  doc.rect(0, 0, pageWidth, 72, 'F')
+  const loadImageAsDataUrl = (src) => new Promise((resolve, reject) => {
+    const image = new Image()
+    image.crossOrigin = 'Anonymous'
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(image, 0, 0)
+        resolve(canvas.toDataURL('image/png'))
+      } catch (error) {
+        reject(error)
+      }
+    }
+    image.onerror = reject
+    image.src = src
+  })
+
+  const logoSrc = '../images/img_logotipo.png'
+  const logoDataUrl = await loadImageAsDataUrl(logoSrc).catch(() => null)
+
+  const headerHeight = 88
+  doc.setFillColor(25, 135, 84)
+  doc.rect(0, 0, pageWidth, headerHeight, 'F')
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', margin, 18, 50, 50)
+  }
   doc.setTextColor(255, 255, 255)
-  doc.setFontSize(22)
-  doc.text('BioUrbis - Reporte de Jardineras', margin, 44)
+  doc.setFontSize(20)
+  doc.text('BioUrbis', margin + 62, 40)
+  doc.setFontSize(12)
+  doc.text('Reporte de Jardineras', margin + 62, 58)
   doc.setFontSize(10)
-  doc.text(`Fecha: ${new Date().toLocaleDateString('es-CO')}`, pageWidth - margin, 44, { align: 'right' })
+  doc.text(`Fecha: ${new Date().toLocaleDateString('es-CO')}`, pageWidth - margin, 40, { align: 'right' })
+  doc.text(`Total jardineras: ${selectedGardens.length}`, pageWidth - margin, 56, { align: 'right' })
+  doc.setLineWidth(1)
+  doc.setDrawColor(255, 255, 255)
+  doc.line(margin, headerHeight - 4, pageWidth - margin, headerHeight - 4)
 
-  cursorY = 100
+  cursorY = headerHeight + 18
 
-  // Report details
   const reportType = elements.reportType?.value || 'monthly'
   const reportTypeLabel = reportType === 'weekly' ? 'Semanal' : reportType === 'custom' ? 'Personalizado' : 'Mensual'
   const selectedGardenLabel = elements.reportGarden?.selectedOptions?.[0]?.text || 'Todas las semillas'
-  addPageIfNeeded(28)
-  doc.setFontSize(10)
-  doc.setTextColor(255, 255, 255)
-  doc.text(`Tipo de reporte: ${reportTypeLabel}`, margin + 12, cursorY)
-  doc.text(`Semilla: ${selectedGardenLabel}`, pageWidth - margin, cursorY, { align: 'right' })
-  cursorY += 24
+  const alertasGlobal = Array.isArray(window.alertas) ? window.alertas : []
+  const activeAlertCountGlobal = alertasGlobal.length
 
-  // User data section
+  addPageIfNeeded(80)
+  doc.setFillColor(230, 247, 235)
+  doc.setDrawColor(179, 221, 181)
+  doc.roundedRect(margin, cursorY, contentWidth, 64, 10, 10, 'FD')
+  doc.setTextColor(18, 81, 50)
+  doc.setFontSize(11)
+  doc.text(`Tipo de reporte: ${reportTypeLabel}`, margin + 16, cursorY + 24)
+  doc.text(`Semilla: ${selectedGardenLabel}`, pageWidth - margin - 16, cursorY + 24, { align: 'right' })
+  doc.setFontSize(10)
+  doc.text(`Jardineras: ${selectedGardens.length}`, margin + 16, cursorY + 42)
+  doc.text(`Alertas activas: ${activeAlertCountGlobal} (${activeAlertCountGlobal > 0 ? 'Sí' : 'No'})`, pageWidth - margin - 16, cursorY + 42, { align: 'right' })
+  cursorY += 88
+
   const userInfo = window.userReportData || {}
-  addPageIfNeeded(84)
-  doc.setFillColor(245, 248, 255)
-  doc.setDrawColor(206, 216, 247)
-  doc.rect(margin, cursorY, contentWidth, 76, 'FD')
-  doc.setTextColor(30, 30, 30)
-  doc.setFontSize(12)
-  doc.text('Usuario', margin + 12, cursorY + 22)
+  addPageIfNeeded(110)
+  doc.setFillColor(255, 255, 255)
+  doc.setDrawColor(179, 221, 181)
+  doc.roundedRect(margin, cursorY, contentWidth, 100, 10, 10, 'FD')
+  doc.setTextColor(16, 63, 40)
+  doc.setFontSize(13)
+  doc.text('Datos del usuario', margin + 14, cursorY + 26)
   doc.setFontSize(10)
-  doc.text(`Nombre: ${userInfo.nombre || 'No disponible'}`, margin + 12, cursorY + 38)
-  doc.text(`Documento: ${userInfo.documento || 'No disponible'}`, margin + 12, cursorY + 54)
-  doc.text(`Correo: ${userInfo.correo || 'No disponible'}`, margin + contentWidth / 2, cursorY + 38)
-  doc.text(`Barrio: ${userInfo.barrio || 'No disponible'}`, margin + contentWidth / 2, cursorY + 54)
+  doc.text(`Nombre: ${userInfo.nombre || 'No disponible'}`, margin + 14, cursorY + 46)
+  doc.text(`Documento: ${userInfo.documento || 'No disponible'}`, margin + 14, cursorY + 62)
+  doc.text(`Correo: ${userInfo.correo || 'No disponible'}`, margin + contentWidth / 2, cursorY + 46)
+  doc.text(`Barrio: ${userInfo.barrio || 'No disponible'}`, margin + contentWidth / 2, cursorY + 62)
 
-  cursorY += 100
+  cursorY += 122
 
-  // Gardens sections
   selectedGardens.forEach((garden, index) => {
-    addPageIfNeeded(22)
-    doc.setFontSize(14)
-    doc.setTextColor(21, 40, 85)
-    doc.text(`Jardinera ${index + 1}: ${garden.jarNombre || 'Sin nombre'}`, margin, cursorY)
-    cursorY += 20
-
-    addPageIfNeeded(110)
-    doc.setFillColor(250, 250, 252)
-    doc.setDrawColor(220, 224, 236)
-    doc.roundedRect(margin, cursorY, contentWidth, 110, 6, 6, 'FD')
-    doc.setFontSize(10)
-    doc.setTextColor(51, 51, 51)
+    const factorCount = Array.isArray(garden.factoresExternos) ? garden.factoresExternos.length : 0
+    const evolutionCount = Array.isArray(garden.evoluciones) ? garden.evoluciones.length : 0
+    const gardenAlertCount = alertasGlobal.filter(a => a.idJardinera === garden.idJardinera).length
+    const gardenAlertText = gardenAlertCount > 0 ? 'Sí' : 'No'
 
     const gardenDetails = [
       `Descripción: ${garden.jarDescripcion || 'No disponible'}`,
@@ -542,58 +585,114 @@ function generateGardenReportPdf() {
       `Progreso: ${garden.jarPorcentajeEvolucion || '0'}%`,
       `Creación: ${garden.jarFechaCreacion || 'N/A'}`
     ]
-    doc.text(gardenDetails, margin + 12, cursorY + 18, { maxWidth: contentWidth - 24 })
-    cursorY += 82
 
-    if (garden.factoresExternos && garden.factoresExternos.length > 0) {
-      addPageIfNeeded(18)
-      doc.setFontSize(11)
-      doc.setTextColor(39, 79, 142)
-      doc.text('Factores externos', margin + 12, cursorY + 8)
-      cursorY += 18
+    const statsLines = [
+      `Factores externos: ${factorCount}`,
+      `Evoluciones: ${evolutionCount}`,
+      `Alerta activa: ${gardenAlertText}`
+    ]
 
-      garden.factoresExternos.forEach((factor) => {
-        addPageIfNeeded(16)
-        doc.setFontSize(10)
-        doc.setTextColor(40, 40, 40)
-        const factorText = `• Humedad: ${factor.humedad || 'N/A'} | Agua: ${factor.cantidadAgua || 'N/A'} | Temperatura: ${factor.temperatura || 'N/A'} | Clima: ${factor.clima || 'N/A'}`
-        const lines = doc.splitTextToSize(factorText, contentWidth - 32)
-        doc.text(lines, margin + 18, cursorY)
-        cursorY += lines.length * 12 + 4
-      })
-      cursorY += 4
-    }
+    const factorLines = factorCount > 0
+      ? garden.factoresExternos.map((factor, factorIndex) => `• Factor ${factorIndex + 1}: Humedad ${factor.humedad || 'N/A'}, Agua ${factor.cantidadAgua || 'N/A'}, Temperatura ${factor.temperatura || 'N/A'}, Clima ${factor.clima || 'N/A'}`)
+      : ['• No hay factores externos registrados.']
 
-    if (garden.evoluciones && garden.evoluciones.length > 0) {
-      addPageIfNeeded(18)
-      doc.setFontSize(11)
-      doc.setTextColor(39, 79, 142)
-      doc.text('Evolución', margin + 12, cursorY + 8)
-      cursorY += 18
+    const evolutionLines = evolutionCount > 0
+      ? garden.evoluciones.map((evolucion, evoIndex) => `• Evolución ${evoIndex + 1}: ${evolucion.fecha || 'Fecha no registrada'} — ${evolucion.nota || 'Sin nota'} (${evolucion.porcentaje || '0'}%)`)
+      : ['• No hay evoluciones registradas.']
 
-      garden.evoluciones.forEach((evolucion, evoIndex) => {
-        addPageIfNeeded(16)
-        doc.setFontSize(10)
-        doc.setTextColor(40, 40, 40)
-        const evolutionText = `${evoIndex + 1}. ${evolucion.fecha || 'Fecha no registrada'} — ${evolucion.nota || 'Sin nota'} (${evolucion.porcentaje || '0'}%)`
-        const lines = doc.splitTextToSize(evolutionText, contentWidth - 32)
-        doc.text(lines, margin + 18, cursorY)
-        cursorY += lines.length * 12 + 4
-      })
-      cursorY += 10
-    }
+    const detailTextLines = gardenDetails.flatMap(line => doc.splitTextToSize(line, contentWidth - 28))
+    const statsTextLines = statsLines.flatMap(line => doc.splitTextToSize(line, contentWidth - 28))
+    const factorTextLines = factorLines.flatMap(line => doc.splitTextToSize(line, contentWidth - 46))
+    const evolutionTextLines = evolutionLines.flatMap(line => doc.splitTextToSize(line, contentWidth - 46))
+
+    const gardenCardHeight = 30 + detailTextLines.length * 14 + statsTextLines.length * 14 + 18 + factorTextLines.length * 14 + 18 + evolutionTextLines.length * 14 + 22
+    const totalGardenHeight = 28 + gardenCardHeight + 20
+
+    addPageIfNeeded(totalGardenHeight)
+    doc.setFontSize(14)
+    doc.setTextColor(18, 81, 50)
+    doc.text(`Jardinera ${index + 1}: ${garden.jarNombre || 'Sin nombre'}`, margin, cursorY)
+    cursorY += 24
+
+    doc.setFillColor(255, 255, 255)
+    doc.setDrawColor(187, 227, 188)
+    doc.roundedRect(margin, cursorY, contentWidth, gardenCardHeight, 10, 10, 'FD')
+
+    let innerY = cursorY + 24
+    doc.setFontSize(11)
+    doc.setTextColor(15, 74, 41)
+    doc.text(detailTextLines, margin + 14, innerY)
+    innerY += detailTextLines.length * 14 + 8
+
+    doc.setFontSize(10)
+    doc.setTextColor(25, 99, 55)
+    doc.text(statsTextLines, margin + 14, innerY)
+    innerY += statsTextLines.length * 14 + 12
+
+    doc.setFontSize(11)
+    doc.setTextColor(13, 89, 48)
+    doc.text('Factores externos', margin + 14, innerY)
+    innerY += 16
+    doc.setFontSize(10)
+    doc.setTextColor(39, 61, 41)
+    factorTextLines.forEach((line) => {
+      doc.text(line, margin + 22, innerY)
+      innerY += 14
+    })
+    innerY += 10
+
+    doc.setFontSize(11)
+    doc.setTextColor(13, 89, 48)
+    doc.text('Evolución', margin + 14, innerY)
+    innerY += 16
+    doc.setFontSize(10)
+    doc.setTextColor(39, 61, 41)
+    evolutionTextLines.forEach((line) => {
+      doc.text(line, margin + 22, innerY)
+      innerY += 14
+    })
+
+    cursorY += gardenCardHeight + 20
   })
 
   doc.setTextColor(120, 120, 120)
   doc.setFontSize(9)
   doc.text('Generado por BioUrbis', margin, pageHeight - 28)
 
-  doc.save('reporte_jardineras.pdf')
-  showNotification('Reporte descargado correctamente.')
+  const fecha = new Date().toLocaleDateString('es-CO').replace(/\//g, '-')
+
+  const tipoReporte = reportTypeLabel.replace(/\s/g, '_')
+
+  const semilla = selectedGardenLabel.replace(/\s/g, '_')
+
+  const nombreArchivo = `Reporte_${tipoReporte}_${semilla}_${fecha}.pdf`
+
+  doc.save(nombreArchivo)
+  mostrarMensaje({
+    title:"¡El reporte de jardineras ha sido generado y descargado en su dispositivo!",
+    text:"Revise su carpeta de descargas para encontrar el archivo PDF con toda la información detallada sobre sus jardineras",
+    icon:"success",
+                                                            
+    //Si el usuario acepta revisar su carpeta de descargas
+    rutaTrue:"homeUsuario.php?page=reports",
+
+    //Si el usuario no acepta revisar su carpeta de descargas
+    rutaFalse:"homeUsuario.php?page=reports"
+  })
 }
 
 function deleteReport(id) {
-  showNotification("Reporte eliminado")
+  mostrarMensaje({
+    title:"¡Reporte eliminado exitosamente!",
+    text:"El reporte ha sido eliminado de su dispositivo",
+    icon:"success",
+                                                            
+    //Si el usuario acepta revisar su carpeta de descargas
+    rutaTrue:"homeUsuario.php?page=reports",
+
+    //Si el usuario no acepta revisar su carpeta de descargas
+    rutaFalse:"homeUsuario.php?page=reports"
+  })
 }
 
 // ================== SEMILLAS ==================
@@ -666,15 +765,6 @@ function populateAlerts() {
 // ================== MONITOREO ==================
 function populateMonitoring() {}
 
-// ================== NOTIFICACIONES ==================
-function showNotification(msg) {
-  if (window.Swal) {
-    Swal.fire("Info", msg, "info")
-  } else {
-    alert(msg)
-  }
-}
-
 // ================== EXPOSICIÓN GLOBAL ==================
 Object.assign(window, {
   viewGarden,
@@ -715,6 +805,3 @@ function cargarPreguntas(idFase) {
       document.getElementById("contenedorPreguntas").innerHTML = html;
     });
 }
-
-
-

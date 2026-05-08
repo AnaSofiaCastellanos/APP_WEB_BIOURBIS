@@ -18,8 +18,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../js/script_mostrarMensaje.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="../lib/jspdf/jspdf.umd.min.js"></script>
 </head>
 <body>
     <?php 
@@ -56,6 +56,8 @@
         //Funcion para consultar las jardineras asociadas a un usuario
         $resultadoConsultarJardineras=consultarJardineras($usuarioActivo);
 
+        //Funcion para consultar las jardineras asociadas a un usuario con informacion de sus factores externos y evoluciones registradas
+        $jardinerasReporte=consultarJardinerasConDetalles($usuarioActivo);
 
         //Si esta inicializada la variable global imgAvatar
         if(isset($_FILES["imgAvatar"]) && $_FILES["imgAvatar"]["error"] == 0){
@@ -484,21 +486,9 @@
                 <button class="sidebar-toggle" id="menuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <button class="back-btn" id="backBtn">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
                 <div class="brand">
                     <i class="fas fa-seedling"></i>
                     <span>BioUrbis</span>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="Buscar jardines, plantas..." class="search-input" id="searchInput">
-                    <button class="search-btn" id="searchBtn">
-                        <i class="fas fa-search"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -555,6 +545,15 @@
                 </a>
             </nav>
         </aside>
+        <!-- SCRIPT -->
+        <script>
+            const toggleBtn = document.getElementById("menuToggle");
+            const sidebar = document.getElementById("sidebar");
+
+            toggleBtn.addEventListener("click", () => {
+                sidebar.classList.toggle("collapsed");
+            });
+        </script>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -564,7 +563,7 @@
                     <div class="profile-header">
                         <div class="profile-info">
                             <div class="profile-avatar">
-                                <img src="<?php echo $datosUsuario["usuImagen"] ?>" alt="Avatar del usuario" id="profileImage">
+                                <img src="../images/avatares/<?php echo $datosUsuario["usuImagen"] ?>" alt="Avatar del usuario" id="profileImage">
                                 <form action="homeUsuario.php" method="POST" enctype="multipart/form-data">
                                     <input type="file" name="imgAvatar" id="imgAvatar" style="display:none;" onchange="enviarFormulario()">
                                     <button type="button" onclick="subirImagen()" class="edit-avatar" id="editAvatarBtn" name ="editAvatarBtn" >
@@ -705,37 +704,37 @@
                             <i class="fas fa-plus"></i> Nueva Jardinera
                         </a>
                     </div>
-                    <?php
-                        //Si existen jardineras registradas por parte del usuario
-                        if(mysqli_num_rows($resultadoConsultarJardineras)){
-                            //Mientras existan jardineras registradas 
+                    <?php 
+                    if(mysqli_num_rows($resultadoConsultarJardineras)){ ?>
+                        <div class="gardens-grid">
+                        <?php
                             while($datosJardinera=mysqli_fetch_array($resultadoConsultarJardineras)){
-                                //Recuperar la fase y semilla relacionada a la jardinera
                                 $fase=consultarDatosFaseJardinera($datosJardinera["idFase"]);
-                                $semilla=consultarDatosSemilla($datosJardinera["idSemilla"]);
-                                
-                                //Mostrar la informacion basica de la jardinera
-                                echo "Nombre: ", $datosJardinera["jarNombre"] . "<br>";
-                                echo "Descripcion: ", $datosJardinera["jarDescripcion"]  . "<br>";
-                                echo "Fecha Creación: ", $datosJardinera["jarFechaCreacion"]  . "<br>";
-                                echo "Fase: ", $fase["faseNombre"] . "<br>";
-                                echo "Semilla: ", $semilla["semNombre"]  . "<br>"; 
-                            
-                                ?>       
-                                <button type="button" class="btn-primary updateGardenBtn" 
-                                data-id="<?php echo $datosJardinera['idJardinera']; ?>">
-                                    <i class="fas fa-edit"></i> Actualizar
-                                </button> <br>
-                                
-                                <?php  
-                            }
-                        }else{
-                            //Mensaje cuando no jardineras registradas
-                            echo "No hay jardineras registradas";
-                        }
-                        
+                                $semilla=consultarDatosSemilla($datosJardinera["idSemilla"]); ?>
+                                <div class="garden-card">
+                                    <div class="garden-card-header">
+                                        <div>
+                                            <h3><?php echo $datosJardinera["jarNombre"] ?></h3>
+                                            <div class="garden-type"><?php echo $fase["faseNombre"] ?></div>
+                                        </div>
+                                        <button type="button" class="garden-action-btn edit-btn updateGardenBtn" data-id="<?php echo $datosJardinera['idJardinera']; ?>" title="Actualizar jardinera">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <div class="garden-description"><?php echo $datosJardinera["jarDescripcion"] ?></div>
+                                    <ul class="info-list">
+                                        <li><span>Semilla</span><span><?php echo $semilla["semNombre"] ?></span></li>
+                                        <li><span>Creación</span><span><?php echo $datosJardinera["jarFechaCreacion"] ?></span></li>
+                                    </ul>
+                                </div>
+                                <?php
+                            } ?>
+                        </div>
+                        <?php
+                    } else {
+                        echo '<div class="empty-section">No hay jardineras registradas.</div>';
+                    }
                     ?>
-                    
                 </div>
             </div>
 
@@ -743,66 +742,60 @@
             <div class="page <?php echo ($page == 'externalFactors') ? 'active' : ''; ?>" id="externalFactors-page">
                 <div class="content-wrapper">
                     <div class="page-header">
-                        <h1><i class="fas fa-leaf"></i> Factores Externos</h1>    
+                        <h1><i class="fas fa-leaf"></i> Factores Externos</h1>
+                        <p>Consulta los registros ambientales de tus jardineras.</p>
                     </div>
                     <?php
-                        //Resultado de la consulta de las jardineras de relacionadas al usuario
                         $resultadoConsultarJardineras=consultarJardineras($usuarioActivo);
-                        echo "Mis jardineras <br>";
-                        $i=1;
-
-                        //Mientras existan jardineras registradas por el usuario
+                        $hasFactors = false; ?>
+                    <div class="gardens-grid">
+                        <?php
                         while($datosJardinera=mysqli_fetch_array($resultadoConsultarJardineras)){
-                            //Recuperar la fase y semilla de la cada jardinera
                             $fase=consultarDatosFaseJardinera($datosJardinera["idFase"]);
                             $semilla=consultarDatosSemilla($datosJardinera["idSemilla"]);
-                            
-                            //Mostrar la informacion basica de la jardinera
-                            echo "Nombre: ", $datosJardinera["jarNombre"] . "<br>";
-                            echo "Fase: ", $fase["faseNombre"] . "<br>";
-                            echo "Fecha Creación: ", $datosJardinera["jarFechaCreacion"]  . "<br>";
-
-                            echo "<hr>";
-                            echo "Factores Externos Registrados <br>";
-
-                            //Consulta de los factores externos registrados por cada jardinera
                             $resultadoConsultarFEPorJardinera=consultarFactoresExternosPorJardinera($datosJardinera['idJardinera']);
-
-                            //Evaluar si hay factores externos registrados para cada jardinera registrada
-                            if(mysqli_num_rows($resultadoConsultarFEPorJardinera)){
-
-                                //Mientras existan factores externos registrados
-                                while($datosFactoresExternos=mysqli_fetch_array($resultadoConsultarFEPorJardinera)){
-                                    
-                                    //Consultar el tipo de clima del factor externo y reemplazarlo en el arreglo creado
-                                    $resultadoConsultarTipoClima=consultarTipoClima($datosFactoresExternos["idTipoClima"]);
-                                    if(mysqli_num_rows($resultadoConsultarTipoClima)){
-                                        $datosTipoClima=arregloDatos($resultadoConsultarTipoClima);
-                                        $datosFactoresExternos["idTipoClima"]=$datosTipoClima["tipoClimaDescripcion"];
-                                    }
-                                
-                                    //Mostrar la informacion basica del factor externo 
-                                    echo "Registro Nº", $i, "<br>";
-                                    echo "Humedad: ", $datosFactoresExternos["factHumedad"],"º <br>";
-                                    echo "Tipo Clima: ", $datosFactoresExternos["idTipoClima"],"<br>";
-                                    echo "Temperatura: ", $datosFactoresExternos["factTemperatura"], "º <br>";
-                                    echo "Cantidad Agua: ", $datosFactoresExternos["factCantidadAgua"],"ml";
-                                
-                                    $i++;
-                                }
-                            }else{
-                                echo "No hay factores externos registrados para esta jardinera";
-                            }  
-                            ?>
-                                <br>
+                            $hasFactors = true; ?>
+                            <div class="garden-card">
+                                <div class="garden-card-header">
+                                    <div>
+                                        <h3><?php echo $datosJardinera["jarNombre"] ?></h3>
+                                        <div class="garden-type"><?php echo $fase["faseNombre"] ?> • <?php echo $semilla["semNombre"] ?></div>
+                                    </div>
+                                </div>
+                                <p class="garden-description">Anteriores registros</p>
+                                <?php if(mysqli_num_rows($resultadoConsultarFEPorJardinera)): ?>
+                                    <ul class="info-list">
+                                        <?php 
+                                        while($datosFactoresExternos=mysqli_fetch_array($resultadoConsultarFEPorJardinera)){
+                                            $resultadoConsultarTipoClima=consultarTipoClima($datosFactoresExternos["idTipoClima"]);
+                                            if(mysqli_num_rows($resultadoConsultarTipoClima)){
+                                                $datosTipoClima=arregloDatos($resultadoConsultarTipoClima);
+                                                $datosFactoresExternos["idTipoClima"]=$datosTipoClima["tipoClimaDescripcion"];
+                                            } ?>
+                                            <li>
+                                                <span class="info-label">Humedad</span>
+                                                <span class="info-value"><?php echo $datosFactoresExternos["factHumedad"] ?>º</span>
+                                            </li>
+                                            <li><span class="info-label">Clima</span><span class="info-value"><?php echo $datosFactoresExternos["idTipoClima"] ?></span></li>
+                                            <li><span class="info-label">Temperatura</span><span class="info-value"><?php echo $datosFactoresExternos["factTemperatura"] ?>º</span></li>
+                                            <li><span class="info-label">Agua</span><span class="info-value"><?php echo $datosFactoresExternos["factCantidadAgua"] ?>ml</span></li>
+                                            <?php 
+                                        } ?>
+                                    </ul>
+                                <?php else: ?>
+                                    <p class="empty-section">No hay factores externos registrados para esta jardinera.</p>
+                                <?php endif; ?>
                                 <button class="btn-primary addNewExternalFactorsBtn"
                                     data-id="<?php echo $datosJardinera['idJardinera']; ?>">
-                                    <i class="fas fa-plus"></i> Agregar
+                                    <i class="fas fa-plus"></i> Agregar uno nuevo
                                 </button>
-                            <hr>
-                            <?php
+                            </div>
+                            <?php 
                         }
-                    ?>
+                        if(!$hasFactors){
+                            echo '<div class="empty-section">No hay jardineras disponibles para mostrar factores externos.</div>';
+                        } ?>
+                    </div>
                 </div>
             </div>
 
@@ -811,65 +804,55 @@
                 <div class="content-wrapper">
                     <div class="page-header">
                         <h1><i class="fas fa-leaf"></i> Evolución Jardineras</h1>
+                        <p>Revisa el progreso visual y las notas de cada jardinera.</p>
                     </div>
                     <?php
-                        //Consulta de las jardineras activas del usuario
-                       $resultadoConsultarJardineras=consultarJardineras($usuarioActivo);
-                        echo "Mis jardineras <br>";
-                        $i=1;
-
-                        //Mientras existan jardineras registradas por el usuario
+                        $resultadoConsultarJardineras=consultarJardineras($usuarioActivo);
+                        $hasEvolution = false; ?>
+                    <div class="gardens-grid">
+                        <?php
                         while($datosJardinera=mysqli_fetch_array($resultadoConsultarJardineras)){
-
-                            //Recuperar la fase y semilla relacionada a la jardinera
                             $fase=consultarDatosFaseJardinera($datosJardinera["idFase"]);
                             $semilla=consultarDatosSemilla($datosJardinera["idSemilla"]);
-                            
-                            //Mostrar la informacion basica de la jardinera
-                            echo "Nombre: ", $datosJardinera["jarNombre"] . "<br>";
-                            echo "Fase: ", $fase["faseNombre"] . "<br>";
-                            echo "Fecha Creación: ", $datosJardinera["jarFechaCreacion"]  . "<br>";
-
-                            echo "<hr>";
-                            echo "Evolucion Jardinera <br>";
-                            //Consultar los registros de evoluciones de la jardinera
                             $resultadoConsultarEvolucionPorJardinera=consultarEvolucionPorJardinera($datosJardinera['idJardinera']);
-
-                            //Evaluar si existen registros de evoluciones registradas para cada jardinera del usuario
-                            if(mysqli_num_rows($resultadoConsultarEvolucionPorJardinera)){
-                                //Mientras existan registros de evoluciones por jardinera
-                                while($datosEvolucion=mysqli_fetch_array($resultadoConsultarEvolucionPorJardinera)){
-
-                                    //Mostrar la informacion basica de cada evolucion registrada
-                                    echo "Registro Nº", $i, "<br>";
-                                    echo "Fecha: ", $datosEvolucion["segJardineraFecha"]," <br>";
-                                    echo "Nota: ", $datosEvolucion["segJardineraNota"]," <br>";
-
-                                    //Evaluar si el usuario subio una imagen al registro de la evolucion 
-                                    if($datosEvolucion['segJardineraImagen']==""){
-                                        echo "Imagen: No hay registro de una imagen <br>";
-                                    }else{
-                                        echo "Imagen: <img src='" . $datosEvolucion['segJardineraImagen'] . "' width='200'> <br>";
-                                    }
-
-                                    echo "Porcentaje Obtenido: ", $datosEvolucion["segJardineraPorcentaje"], "% <br>";
-                                    echo "<hr>";
-                                    $i++;
-                                }
-                            }else{
-                                echo "No hay registros de evoluciones para esta jardinera";
-                            } 
-                            ?>
-                            <br>
-                            <button class="btn-primary addNewGardenEvolutionBtn"
-                                data-id="<?php echo $datosJardinera['idJardinera']; ?>"
-                                data-fase="<?php echo $datosJardinera['idFase']; ?>">
-                                <i class="fas fa-plus"></i> Agregar
-                            </button>
-                            <hr>
-                            <?php
+                            $hasEvolution = true;
+                            $registro = 1; ?>
+                            <div class="garden-card">
+                                <div class="garden-card-header">
+                                    <div>
+                                        <h3><?php echo $datosJardinera["jarNombre"] ?></h3>
+                                        <div class="garden-type"><?php echo $fase["faseNombre"] ?> • <?php echo $semilla["semNombre"] ?></div>
+                                    </div>
+                                </div>
+                                <p class="garden-description">Evolución registrada de esta jardinera</p>
+                                <?php if(mysqli_num_rows($resultadoConsultarEvolucionPorJardinera)): ?>
+                                    <?php while($datosEvolucion=mysqli_fetch_array($resultadoConsultarEvolucionPorJardinera)){
+                                        $registroText = $registro++; ?>
+                                        <div class="evolution-item">
+                                            <ul class="info-list">
+                                                <li><span class="info-label">Registro</span><span class="info-value"><?php echo $registroText ?></span></li>
+                                                <li><span class="info-label">Fecha</span><span class="info-value"><?php echo $datosEvolucion["segJardineraFecha"] ?></span></li>
+                                                <li><span class="info-label">Porcentaje</span><span class="info-value"><?php echo $datosEvolucion["segJardineraPorcentaje"] ?>%</span></li>
+                                            </ul>
+                                            <p class="evolution-note"><strong>Nota:</strong> <?php echo $datosEvolucion["segJardineraNota"] ?></p>
+                                            <?php if(!empty($datosEvolucion['segJardineraImagen'])): ?>
+                                                <img class="evolution-image" src="<?php echo $datosEvolucion['segJardineraImagen'] ?>" alt="Imagen de evolución">
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php } ?>
+                                <?php else: ?>
+                                    <p class="empty-section">No hay registros de evolución para esta jardinera.</p>
+                                <?php endif; ?>
+                                <button class="btn-primary addNewGardenEvolutionBtn" data-id="<?php echo $datosJardinera['idJardinera']; ?>" data-fase="<?php echo $datosJardinera['idFase']; ?>">
+                                    <i class="fas fa-plus"></i> Agregar evolución
+                                </button>
+                            </div>
+                            <?php 
                         }
-                    ?>
+                        if(!$hasEvolution){
+                            echo '<div class="empty-section">No hay jardineras disponibles para mostrar evolución.</div>';
+                        }?>
+                    </div>
                 </div>
             </div>
 
@@ -1022,22 +1005,30 @@
                             </select>
                         </div>
                         <div class="filter-group">
-                            <label for="reportGarden">Semilla</label>
+                            <label for="reportGarden">Jardinera</label>
+
                             <select id="reportGarden" class="report-item">
-                                <option value="all">Todas las semillas</option>
+                                <option value="all">Todas las jardineras</option>
+
                                 <?php
-                                    $seenSemillas = [];
-                                    if (!empty($jardinerasReporte) && is_array($jardinerasReporte)) {
-                                        foreach ($jardinerasReporte as $gardenOption) {
-                                            $seedId = $gardenOption['idSemilla'] ?? '';
-                                            $seedName = $gardenOption['semNombre'] ?? 'Semilla';
-                                            if ($seedId === '' || in_array($seedId, $seenSemillas, true)) {
-                                                continue;
-                                            }
-                                            $seenSemillas[] = $seedId;
-                                            echo "<option value=\"{$seedId}\">{$seedName}</option>";
+                                $seenGardens = [];
+
+                                if (!empty($jardinerasReporte) && is_array($jardinerasReporte)) {
+
+                                    foreach ($jardinerasReporte as $gardenOption) {
+
+                                        $gardenId = $gardenOption['idJardinera'] ?? '';
+                                        $gardenName = $gardenOption['jarNombre'] ?? 'Jardinera';
+
+                                        if ($gardenId === '' || in_array($gardenId, $seenGardens, true)) {
+                                            continue;
                                         }
+
+                                        $seenGardens[] = $gardenId;
+
+                                        echo "<option value='{$gardenId}'>{$gardenName}</option>";
                                     }
+                                }
                                 ?>
                             </select>
                         </div>
@@ -1322,6 +1313,18 @@
         </div>
     </div>
 
+    <script>
+        window.gardenReportData = <?php echo json_encode($jardinerasReporte, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>;
+        window.alertas = <?php echo json_encode($alertas ?? [], JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>;
+        window.userReportData = {
+            nombre: <?php echo json_encode($datosUsuario['usuNombre'] ?? '', JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>,
+            documento: <?php echo json_encode($datosUsuario['usuNumeroDocumento'] ?? '', JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>,
+            correo: <?php echo json_encode($datosUsuario['usuCorreo'] ?? '', JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>,
+            barrio: <?php echo json_encode($datosUsuario['usuBarrio'] ?? '', JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>,
+            alertasActivas: <?php echo json_encode((int)($cantidadFilas['cantidadAlertas'] ?? 0), JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP|JSON_UNESCAPED_UNICODE); ?>
+        };
+    </script>
+    <script src="../js/script_mostrarMensaje.js"></script>
     <script src="../js/scripts_HomeUsuario.js"></script>
     <?php 
     //Ejecutar mensajes emergentes

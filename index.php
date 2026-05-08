@@ -29,6 +29,10 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style_Index.css" rel="stylesheet">
+
+    <!-- Ejecución de Pantallas Emergentes-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="../js/scripts_HomeUsuario.js"></script>
 </head>
 <body>
     <?php 

@@ -435,6 +435,66 @@
         return $datos;
     }
 
+    //Función para consultar todas las jardineras con sus factores externos y evolución
+    function consultarJardinerasConDetalles($usuario){
+        $conexion=abrirConexionDB();
+
+        $query="SELECT jardinera.*, semilla.semNombre AS semNombre, fase.faseNombre AS faseNombre FROM jardinera 
+        INNER JOIN semilla ON jardinera.idSemilla=semilla.idSemilla
+        INNER JOIN fase ON jardinera.idFase=fase.idFase
+        WHERE jardinera.usuNumeroDocumento='$usuario'";
+
+        $resultado=mysqli_query($conexion, $query);
+        $jardineras=[];
+
+        if($resultado && mysqli_num_rows($resultado) > 0){
+            while($jardinera=mysqli_fetch_assoc($resultado)){
+                $idJardinera=$jardinera['idJardinera'];
+                $factores=[];
+                $resultadoFactores=consultarFactoresExternosPorJardinera($idJardinera);
+
+                if($resultadoFactores && mysqli_num_rows($resultadoFactores) > 0){
+                    while($factor=mysqli_fetch_assoc($resultadoFactores)){
+                        $climaDescripcion='';
+                        if(!empty($factor['idTipoClima'])){
+                            $resultadoClima=consultarTipoClima($factor['idTipoClima']);
+                            if($resultadoClima && mysqli_num_rows($resultadoClima) > 0){
+                                $climaDatos=mysqli_fetch_assoc($resultadoClima);
+                                $climaDescripcion=$climaDatos['tipoClimaDescripcion'] ?? '';
+                            }
+                        }
+
+                        $factores[]=[
+                            'humedad'=>$factor['factHumedad'] ?? '',
+                            'temperatura'=>$factor['factTemperatura'] ?? '',
+                            'cantidadAgua'=>$factor['factCantidadAgua'] ?? '',
+                            'clima'=>$climaDescripcion
+                        ];
+                    }
+                }
+
+                $evoluciones=[];
+                $resultadoEvolucion=consultarEvolucionPorJardinera($idJardinera);
+                if($resultadoEvolucion && mysqli_num_rows($resultadoEvolucion) > 0){
+                    while($evolucion=mysqli_fetch_assoc($resultadoEvolucion)){
+                        $evoluciones[]=[
+                            'fecha'=>$evolucion['segJardineraFecha'] ?? '',
+                            'nota'=>$evolucion['segJardineraNota'] ?? '',
+                            'imagen'=>$evolucion['segJardineraImagen'] ?? '',
+                            'porcentaje'=>$evolucion['segJardineraPorcentaje'] ?? ''
+                        ];
+                    }
+                }
+
+                $jardinera['factoresExternos']=$factores;
+                $jardinera['evoluciones']=$evoluciones;
+                $jardineras[]=$jardinera;
+            }
+        }
+
+        return $jardineras;
+    }
+
     //Función para actualizar los datos de una jardinera
     function actualizarJardinera($idJardinera, $nombre, $descripcion){
         $conexion=abrirConexionDB();
@@ -471,7 +531,7 @@
     function consultarFactoresExternosPorJardinera($idJardinera){
         $conexion=abrirConexionDB();
 
-        $query="SELECT * FROM factores_externos WHERE idJardinera='$idJardinera' ORDER BY idFactoresExternos ASC";
+        $query="SELECT * FROM factores_externos WHERE idJardinera='$idJardinera' ORDER BY idFactoresExternos ASC LIMIT 3";
         $resultado=mysqli_query($conexion, $query);
 
         return $resultado;
