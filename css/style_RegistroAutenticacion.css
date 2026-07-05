@@ -1,0 +1,289 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+}
+body{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(234, 213, 166); 
+}
+.container, .container-Verificar-Correo{
+    width: 1000px;
+    height: 700px;
+    display: flex;
+    justify-content: center;
+    margin: 10% auto;
+    position: relative;
+    background-color: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgb(0,0,0,0.3);
+}
+.container-Verificar-Correo{
+    width: 500px;
+    height: 350px;
+}
+.container-form{
+    width: 100%;
+    overflow: hidden;
+}
+.container-form form{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.container-form h2{
+    font-size: 30px;
+    margin-bottom: 20px;
+    color: rgb(38, 41, 22);
+}
+.container-form span{
+    font-size: 24px;
+    margin-bottom: 15px;
+    text-align: center;
+    color: rgb(42, 59, 30); 
+}
+.container-input{
+    width: 300px;
+    height: 40px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap:8px;
+    padding: 0 15px;
+    border:2px solid rgb(234, 213, 166);
+    border-radius: 5px;
+}
+.container-input input, .container-input select{
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    font-size: 15px;
+    color: rgb(38, 41, 22); 
+}
+select .opcion:hover{
+    background-color: rgb(184, 98, 12); 
+    color: white;
+}
+.container-input-checkbox{
+    width: 300px;
+}
+.container-input-checkbox input[type="checkbox"]{
+    accent-color: rgb(177,166,135)
+}
+.container-form a{
+    color: rgb(42, 59, 30); 
+    font-size: 28px;
+    margin-bottom: 20px;
+    margin-top: 5px;
+}
+.container-form .button , .container-form .button-welcome-sign-up{
+    width: 170px;
+    height: 45px;
+    font-size: 20px;
+    border: none; 
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    background-color: rgb(42, 59, 30); 
+    color: white;
+}
+.container-form .button-welcome-sign-up{
+     width: 140px;
+    background-color: rgb(42, 59, 30); 
+}
+.container-form .olvidasteContrasena{
+    color: rgb(42, 59, 30);
+}
+.container-welcome-sign-in, .container-welcome-sign-up {
+    position:absolute;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background-color: rgb(42, 59, 30); 
+    overflow: hidden;
+}
+.container-welcome-sign-up, #botonIniciarSesion{
+    background-color: rgb(42, 59, 30); 
+}
+.container-welcome-sign-in{
+    border-radius: 50% 0 0 50%;
+}
+.container-welcome-sign-up{
+    border-radius: 0 50% 50% 0;
+}
+.container-welcome-sign-in .welcome, .container-welcome-sign-up .welcome{
+    position: absolute;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    gap:20px;  
+    color:white;
+}
+.container-welcome-sign-in h3, .container-welcome-sign-up h3{
+    font-size: 45px;
+    text-align: center;
+    margin-left: 25px;
+}
+.container-welcome-sign-in p, .container-welcome-sign-up p{
+    font-size: 25px;
+    text-align: center;
+}
+.container-welcome-sign-up p{
+    margin-right: 20px;
+}
+
+.container-welcome-sign-in .button a, .container-welcome-sign-up .button-welcome-sign-up a {
+    text-decoration: none;
+    border: 2px solid white;
+    color: white;
+    padding: 15px;
+    font-size: 20px;
+    border-radius: 5px;
+}
+.redireccion {
+    background-color: #d9dce1;
+    color: #4b5563;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.redireccion:hover {
+    background-color: #c9cdd3;
+}
+
+.botonRespuesta {
+    background-color: #c9770e;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.botonRespuesta:hover {
+    background-color: #b56a0c;
+}
+
+.redireccionScript {
+    text-decoration: none;
+    color: inherit;
+}
+
+.imagen-fondo {
+    position: absolute;
+    width: 150%;
+    max-width: 1000px;
+    opacity: 0.55;
+    left: 60%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; 
+}
+.imagen-fondo2 {
+    position: absolute;
+    width: 150%;
+    max-width: 1000px;
+    opacity: 0.55;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; 
+}
+.swal2-close:focus{
+    outline:none;
+    box-shadow: none;
+}
+/* Evitar que SweetAlert desplace el contenido del body */
+body.swal2-shown {
+    overflow-y: auto !important;
+    padding-right: 0 !important;
+}
+.container-form a.button-regresar{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, rgb(225, 235, 218), rgb(42, 59, 30));
+    border: none;
+    border-radius: 999px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    box-shadow: 0 12px 20px rgba(79, 60, 25, 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.container-form a.button-regresar:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 16px 28px rgba(79, 60, 25, 0.24);
+    filter: brightness(1.05);
+}
+.container-form a.button-regresar i{
+    font-size: 18px;
+}
+.error-message{
+    color:rgb(184, 98, 12);
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 5px;
+    padding-left: 4px;
+    letter-spacing: 0.3px;
+    box-shadow: rgba(230,57,70,0.3);
+}
+.verification-container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    width:100%;
+}
+
+.verification-code{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+.code-input{
+    width:60px;
+    height:65px;
+    border:2px solid #d9dee5;
+    border-radius:14px;
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+    outline:none;
+    transition:.25s;
+}
+
+.code-input:focus{
+    border-color:rgb(184, 98, 12);
+    box-shadow:0 0 0 4px rgba(184, 98, 12, 0.15);
+}
+
+.code-input:hover{
+    border-color:rgb(184, 98, 12);
+}
