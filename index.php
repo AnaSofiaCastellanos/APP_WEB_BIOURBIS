@@ -85,9 +85,22 @@
 
             if($resultadoRegistrarResena){  
                 $_SESSION["alerta"]='resenaRegistrada';
-                
-                //Enviar correo electrónico para confirmar su reseña 
-                include("php/mailConfirmacionResena.php"); ?>
+
+                require_once "functions/enviarCorreos.php";
+
+                $enviado = enviarCorreo( 
+                    $correoUsuario,
+                    $nombreUsuario,
+                    "BioUrbis - Reseña publicada con éxito",
+                    correoResenaPublicada(
+                        $nombreUsuario,
+                        $mensajeUsuario
+                    )
+                );
+
+                if(!$enviado){
+                    $_SESSION["alerta"]="errorAlEnviarCorreoResena";
+                } ?>
                 <!--Redirección a la pagina inicial del proyecto -->
                 <script> window.location.replace("index.php");</script>
                 <?php 
@@ -449,6 +462,27 @@
                             //Si el usuario no acepta volver a registrar una reseña
                             rutaFalse:"index.php"
                         })
+                    </script>
+                    <?php
+                break;
+
+                case "errorAlEnviarCorreoResena": ?>
+                    <script>
+
+                        mostrarMensaje({
+
+                            title:"¡Error a la hora de enviar el correo electrónico!",
+
+                            text:"Recargue la página y vuelva a intentarlo",
+
+                            icon:"error",
+
+                            rutaTrue:"../index.php",
+
+                            rutaFalse:"../index.php"
+
+                        });
+
                     </script>
                     <?php
                 break;

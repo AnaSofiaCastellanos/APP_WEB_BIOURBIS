@@ -480,24 +480,42 @@
         function consultarDatosSolicitud($id){
             $conexion=abrirConexionDB();
 
-            $query="SELECT * FROM solicitud WHERE usuNumeroDocumento'
-            ORDER BY idSolicitud DESC LIMIT 5";
+            $query="SELECT * FROM solicitud WHERE idSolicitud='$id'";
             $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            if(mysqli_num_rows($resultado)>0){
+                $datos=arregloDatos($resultado);
+            }
+
+            return $datos;
         }
 
         //Función para registrar una solicitud en la base de datos con el estado pendiente
-        function registrarSolicitud($tipo, $mensaje){
+        function registrarSolicitud($fecha, $tipo, $mensaje){
             $conexion=abrirConexionDB();
-            $fechaActual=recuperarFechaActual();
 
-            $query="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado) VALUES('$fechaActual', '$tipo', '$mensaje', 'Pendiente')";
+            $query="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado) VALUES('$fecha', '$tipo', '$mensaje', 'Pendiente')";
             $resultado=mysqli_query($conexion, $query);
 
             return $resultado;
         }
-        
+
+        //Función para registrar una solicitud variada en la base de datos con el estado pendiente
+        function registrarSolicitudVariada($fecha, $tipo, $mensaje, $semilla, $usuario){
+            $conexion=abrirConexionDB();
+            
+            if($tipo==="Admisión Nueva Semilla"){
+                $query="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliSemilla, soliEstado, usuNumeroDocumento)
+                VALUES('$fecha', '$tipo', '$mensaje', '$semilla', 'Pendiente', '$usuario')";
+            }else{
+                $query="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion,  soliEstado, usuNumeroDocumento)
+                VALUES('$fecha', '$tipo', '$mensaje', 'Pendiente', '$usuario')";
+            }
+            
+            $resultado=mysqli_query($conexion, $query);
+
+            return $resultado;
+        }
         
         //Función para actualizar el estado de la solicitud
         function actualizarEstadoSolicitud($id, $estado){
@@ -1435,7 +1453,7 @@
 
             $query = "SELECT alerTipo
                     FROM alerta
-                    WHERE idJardinera = '$idJardinera'";
+                    WHERE idJardinera = '$idJardinera' AND alerEstado='Activa'";
 
             return mysqli_query($conexion, $query);
         }

@@ -32,6 +32,9 @@
         //Abrir la conexion a la base de datos a través de una función
         $conexion_db=abrirConexionDB();
 
+        //Recuperar la fecha actual del equipo
+        $fechaActual=recuperarFechaActual();
+
         //Consultar los datos del usuario que inicio sesión
         $datosUsuario=consultarDatosUsuario($usuarioActivo);
 
@@ -65,362 +68,506 @@
         //Funcion para consultar las jardineras asociadas a un usuario con informacion de sus factores externos y evoluciones registradas
         $jardinerasReporte=consultarJardinerasConDetalles($usuarioActivo);
 
-        //Si esta inicializada la variable global imgAvatar
-        if(isset($_FILES["imgAvatar"]) && $_FILES["imgAvatar"]["error"] == 0){
-            $nombre = $_FILES["imgAvatar"]["name"];
-            $tmp = $_FILES["imgAvatar"]["tmp_name"];
-            $size = $_FILES["imgAvatar"]["size"];
+        //== USUARIO ==
+            //Actualizar el avatar del usuario
+            if(isset($_FILES["imgAvatar"]) && $_FILES["imgAvatar"]["error"] == 0){
+                $nombre = $_FILES["imgAvatar"]["name"];
+                $tmp = $_FILES["imgAvatar"]["tmp_name"];
+                $size = $_FILES["imgAvatar"]["size"];
 
-            // Obtener extensión
-            $extension = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
-
-            // Extensiones permitidas
-            $extPermitidas = ['jpg','jpeg','png','webp'];
-
-            if(in_array($extension, $extPermitidas) && $size <= 2*1024*1024){
-
-                // Nombre único
-                $nombreF = uniqid("avatar_") . "." . $extension;
-
-                // Ruta destino
-                $rutaImagen = "../images/avatares/" . $nombreF;
-
-                // Mover archivo
-                if(move_uploaded_file($tmp, $rutaImagen)){
-
-                    if(agregarImagenPerfil($usuarioActivo, $rutaImagen)){ 
-                        registrarActividadUsuario("Perfil","Actualizar", "Actualizó su imagen de perfil", $usuarioActivo); 
-                        ?>
-                        <meta http-equiv="refresh" content="1">
-                    <?php   
-                    }else{
-                        $_SESSION["alerta"] = "errorAlSubirImagen";
-                    }
-                }else{
-                    $_SESSION["alerta"] = "errorSubidaImagen";
-                }
-            }else{
-                $_SESSION["alerta"] = "formatoImagenInvalido";
-            }
-        }
-
-        //Si la variable global btn-crearJardinera esta inicializada, se incluye el procesador para agregar una nueva jardinera
-        if(isset($_POST["btn-crearJardinera"])){
-            include ("procesadorAgregarJardinera.php");
-        }
-
-        //Si la variable global enviarSolicitudBtn esta inicializada, se incluye el procesador para agregar una nueva solicitud
-        if(isset($_POST["enviarSolicitudBtn"])){
-            include("procesadorEnviarSolicitud.php");
-        }
-
-        //Si la variable global actualizarJardineraBtn esta inicializada, se incluye el procesador para actualizar los datos de una jardinera
-        if(isset($_POST["actualizarJardineraBtn"])){
-            //Recuperar el id de la jardinera a actualizar desde el formulario
-            $idJardinera=$_POST["gardenId"];
-        
-            //Recuperar los datos ingresados por el usuario desde el formulario
-            $nombreJardinera = ucwords(strtolower(trim($_POST["updateGardenName"])));
-            $descripcionJardinera = ucfirst(strtolower(trim($_POST["updateGardenDescription"])));
-
-            //Consultar los datos actuales de la jardinera a actualizar
-            $datosJardinera=consultarDatosJardineraPorId($idJardinera);
-
-            //Actualizar el nombre de la jardinera
-            $_SESSION["nuevoNombreJardinera"] = ($nombreJardinera!="") ? $nombreJardinera : $datosJardinera["jarNombre"];
-
-            //Actualizar la descripcion de la jardinera
-            $_SESSION["nuevaDescripcionJardinera"] = ($descripcionJardinera!="") ? $descripcionJardinera : $datosJardinera["jarDescripcion"];
-
-            //Actualizar los valores de la jardinera con sus nuevos valores almacenados en las sesiones
-            $nombreJardinera=$_SESSION["nuevoNombreJardinera"];
-            $descripcionJardinera=$_SESSION["nuevaDescripcionJardinera"];
-
-            if(actualizarJardinera($idJardinera, $nombreJardinera, $descripcionJardinera)){
-                //Registrar la actividad del usuario
-                registrarActividadUsuario("Jardinera","Actualizar", "Actualizó los datos de la jardinera: {$nombreJardinera}", $usuarioActivo);
-
-                $_SESSION["alerta"]="jardineraActualizada";
-            }else{
-                $_SESSION["alerta"]="errorAlActualizarJardinera";
-            }
-        }
-
-        //Si la variable global agregarFactoresExternosBtn esta inicializada
-        if(isset($_POST["agregarFactoresExternosBtn"])){
-            //Recuperar el id de la jardinera a actualizar desde el formulario
-            $idJardinera=$_POST["gardenSelectedId"];
-
-            //Recuperar los valores del formulario
-            $humedad=trim($_POST["humidity"]);
-            $cantidadAgua=trim($_POST["amountWater"]);
-            $temperatura=trim($_POST["temperature"]);
-            $clima=trim($_POST["weather"]);
-
-            //Si el registro es exitoso
-            if(agregarFactoresExternos($idJardinera, $humedad, $cantidadAgua, $temperatura, $clima)){
-                //Registrar la actividad del usuario
-                registrarActividadUsuario("Factores Externos","Crear", "Agregó factores externos para la jardinera N° {$idJardinera}", $usuarioActivo);
-
-                $_SESSION["alerta"]="factorExternoRegistrado";
-
-            //Si el registro no es exitoso
-            }else{
-                $_SESSION["alerta"]="errorAlRegistrarFactor";
-            }
-        }
-
-        //Si el usuario oprime el boton agregar evolucion del formulario
-        if(isset($_POST["agregarEvolucionBtn"])){
-            $fechaActual=recuperarFechaActual();
-
-            //Recuperar los valores del formulario
-            $idJardinera = trim($_POST["gardenEvolutionId"]);
-            $idFase = trim($_POST["faseEvolutionId"]);
-            $notaEvolucion = ucfirst(strtolower(trim($_POST["notaEvolucion"])));
-
-            //Inicializar la variable de la ruta del imagen
-            $rutaImagen = ""; 
-
-            // Validar y procesar la imagen de evolución si se ha subido una
-            if(isset($_FILES['imagenEvolucion']) && $_FILES['imagenEvolucion']['error'] == 0){
-                //Recuperar el nombre de la imagen
-                $nombre = $_FILES['imagenEvolucion']['name'];
-                //Recuperar la ruta temporal de la imagen
-                $rutaTemp = $_FILES['imagenEvolucion']['tmp_name'];
-                //Recuperar el tamaño de la imagen
-                $size = $_FILES['imagenEvolucion']['size'];
-
-                //Validar la extension y el tamaño de la imagen
+                // Obtener extensión
                 $extension = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
 
-                //Arreglo con las extensiones permitidas
+                // Extensiones permitidas
                 $extPermitidas = ['jpg','jpeg','png','webp'];
 
-                //Si la extension de la imagen se encuentra dentro de las extensiones permitidas y el tamaño 
                 if(in_array($extension, $extPermitidas) && $size <= 2*1024*1024){
 
-                    //Renombrar la imagen con un nombre unico utilizando la función uniqid y la extension original de la imagen
-                    $nombreF = uniqid("img_") . "." . $extension;
+                    // Nombre único
+                    $nombreF = uniqid("avatar_") . "." . $extension;
 
-                    //Recuperar la ruta de la image
-                    $rutaDestino = "../images/seguimiento/" . $nombreF;
+                    // Ruta destino
+                    $rutaImagen = "../images/avatares/" . $nombreF;
 
-                    //Mover la imagen a la carpeta de destino y actualizar la ruta de la imagen en la base de datos
-                    if(move_uploaded_file($rutaTemp, $rutaDestino)){
-                        $rutaImagen = $rutaDestino;
+                    // Mover archivo
+                    if(move_uploaded_file($tmp, $rutaImagen)){
+
+                        if(agregarImagenPerfil($usuarioActivo, $rutaImagen)){ 
+                            registrarActividadUsuario("Perfil","Actualizar", "Actualizó su imagen de perfil", $usuarioActivo); 
+                            ?>
+                            <meta http-equiv="refresh" content="1">
+                        <?php   
+                        }else{
+                            $_SESSION["alerta"] = "errorAlSubirImagen";
+                        }
                     }else{
                         $_SESSION["alerta"] = "errorSubidaImagen";
-                        return;
                     }
                 }else{
                     $_SESSION["alerta"] = "formatoImagenInvalido";
-                    return;
                 }
             }
 
-            //Inicializar la variable que almacena el total del porcentaje
-            $totalPorcentaje = 0;
+            //Agregar una nueva solicitud
+            if(isset($_POST["enviarSolicitudBtn"])){
+                //Recuperar los valores del formulario
+                $tipoSolicitud=trim($_POST["typeRequest"]);
+                $mensaje=ucfirst(strtolower(trim($_POST["message"])));;
 
-            //Para cada pregunta del formulario, si el nombre del input comienza con "preg_", se recupera el valor de la respuesta y se suma al total del porcentaje
-            foreach($_POST as $key => $value){
-                if(strpos($key, "preg_") === 0){
-                    $idPregunta = str_replace("preg_", "", $key);
-                    $respuesta = $value;
-                    //Incrementar el porcentaje 
-                    $totalPorcentaje += $respuesta;
-                }
-            }
+                //Evaluar el tipo de solicitud y si el campo de semilla se encuentra activa
+                if($tipoSolicitud=="Admisión Nueva Semilla" && !empty($_POST["newSeed"])){
+                    //Recuperar la semilla seleccionada por el usuario
+                    $semillaSeleccionada=ucfirst(strtolower(trim($_POST["newSeed"])));
 
-            //Registrar la evolución de la jardinera en la base de datos, incluyendo la nota, la ruta de la imagen y el porcentaje total obtenido
-            $fechaRegistroEvolucion= agregarEvolucionJardinera(
-                $idJardinera, 
-                $notaEvolucion, 
-                $rutaImagen, 
-                $totalPorcentaje
-            );
+                    //Consulta para verificar si la semilla ya se encuentra registrada en el sistema
+                    $resultadoConsultarExistenciaSemilla=consultarExistenciaSemillaPorNombre($semillaSeleccionada);
 
-            //Si el registro es exitoso
-            if($fechaRegistroEvolucion!=false){
-                //Registrar la actividad del usuario
-                registrarActividadUsuario("Evolución Jardinera","Crear", "Agregó evolución para la jardinera N° {$idJardinera}", $usuarioActivo);
+                    //Evalua si existe algun registro con ese nombre
+                    if(mysqli_num_rows($resultadoConsultarExistenciaSemilla)>0){
+                        $_SESSION["alerta"]="semillaExistente";
+                    }else{
+                        //Evaluar si la consulta se ejecutó correctamente
+                        if(registrarSolicitudVariada($fechaActual, $tipoSolicitud, $mensaje, $semillaSeleccionada, $usuarioActivo)==true){
+                            //Enviar correo electrónico para confirmar su solicitud 
+                            require_once("../functions/enviarCorreos.php");
 
-                $_SESSION["alerta"] = "evolucionRegistrada"; 
-            
-                //Si el porcentaje del seguimiento es igual a 100
-                if($totalPorcentaje === 100){
-                    //Obtener los datos de la jardinera
-                    $datosJardinera=consultarDatosJardineraPorId($idJardinera);
+                            $correo = $datosUsuario["usuCorreo"];
+                            $nombre = $datosUsuario["usuNombre"];
 
-                    //Obtener los datos de la semilla
-                    $datosSemilla=consultarDatosSemilla($datosJardinera["idSemilla"]);
+                            //Enviar correo
+                            $enviado = enviarCorreo(
+                                $correo,
+                                $nombre,
+                                "BioUrbis - Solicitud recibida con éxito",
+                                correoSolicitudUsuario(
+                                    $nombre,
+                                    $tipoSolicitud,
+                                    $mensaje
+                                )
+                            );
 
-                    //Obtener los datos de la etapa de crecimiento de la semilla de la jardinera
-                    $datosEtapaCrecimiento=consultarDatosEtapaCrecimiento($datosSemilla["idEtapaCrecimiento"]);
-                    
-                    //Evaluar en que fase se encuentra actualmente la jardinera
-                    switch($idFase){
+                            if(!$enviado){
+                                $_SESSION["alerta"]="errorAlEnviarCorreoSolicitud";
+                            }
 
-                        //Si la fase es germinacion, pasa a desarrollo vegetativo
-                        case 1: 
-                            //Recuperar los dias minimos de cada fase actual 
-                            $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasDesarrolloVegetativoMin"];
-                            $nuevaFase = 2; 
-                        break;
+                            //Registrar la actividad del usuario
+                            registrarActividadUsuario("Solicitud","Crear", "Registró una nueva solicitud de tipo ${$tipoSolicitud}", $usuarioActivo);
 
-                        //Si la fase es desarrollo vegetativo, pasa a floracion
-                        case 2: 
-                            //Recuperar los dias minimos de cada fase actual 
-                            $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasFloracionMin"];
-                            $nuevaFase = 3; 
-                        break;
-
-                        //Si la fase es floracion, pasa a llenado de granos
-                        case 3: 
-                            //Recuperar los dias minimos de cada fase actual 
-                            $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasLlenadoGranosMin"];
-                            $nuevaFase = 4; 
-                        break;
-
-                        //Si la fase es llenado de granos, pasa a cosecha
-                        case 4: 
-                            //Recuperar los dias minimos de cada fase actual 
-                            $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasCosechaMin"];
-                            $nuevaFase = 5; 
-                        break;
-
-                        default: 
-                            $nuevaFase = $idFase;
+                            header("Location: homeUsuario.php?page=request");
+                            exit();
+                        }else{
+                            $_SESSION["alerta"]="errorEnviarSolicitud";
+                        }
                     }
+                }else{
+                    //Evaluar si la consulta se ejecutó correctamente
+                    if(registrarSolicitudVariada($fechaActual, $tipoSolicitud, $mensaje, null, $usuarioActivo)==true){
+                        //Enviar correo electrónico para confirmar su solicitud 
+                        require_once("../functions/enviarCorreos.php");
 
-                    //Calcular la diferencia de dias entre la fecha de creacion de la jardinera y la fecha actual
-                    $diferenciaFechas=calcularDiasEntreFechas($datosJardinera["jarFechaCreacion"], $fechaActual);
+                        $correo = $datosUsuario["usuCorreo"];
+                        $nombre = $datosUsuario["usuNombre"];
 
-                    if($diferenciaFechas>=$diasMinimos){  
-                        //Obtener el porcentaje de la nueva fase de la jardinera
-                        $datosFase = consultarDatosFase($nuevaFase);
-                        $porcentajeFase = $datosFase["fasePorcentaje"];
-
-                        //Actualizar el porcentaje y la fase de la jardinera
-                        $resultadoActualizarEvolucion = actualizarEvolucionJardinera(
-                            $idJardinera, 
-                            $porcentajeFase, 
-                            $nuevaFase
+                        //Enviar correo
+                        $enviado = enviarCorreo(
+                            $correo,
+                            $nombre,
+                            "BioUrbis - Solicitud recibida con éxito",
+                            correoSolicitudUsuario(
+                                $nombre,
+                                $tipoSolicitud,
+                                $mensaje
+                            )
                         );
 
-                        //Si el resultado de la actualización es exitoso, mostrar un mensaje de éxito
-                        if($resultadoActualizarEvolucion){
-                            $_SESSION["alerta"] = "jardineraEvolucionada";
+                        if(!$enviado){
+                            $_SESSION["alerta"]="errorAlEnviarCorreoSolicitud";
                         }
-                        
+
+                        //Registrar la actividad del usuario
+                        registrarActividadUsuario("Solicitud","Crear", "Registró una nueva solicitud de tipo ${$tipoSolicitud}", $usuarioActivo);
+
+                        header("Location: homeUsuario.php?page=request");
+                        exit();
                     }else{
-                        //Mostrar una alerta cuando la jardinera no cumple los dias minimos para pasar de fase
-                        $_SESSION["alerta"] = "tiempoInsuficienteEvolucion";
+                        $_SESSION["alerta"]="errorEnviarSolicitud";
                     }
-
-                    //Actualizar el estado del registro de la evolucion 
-                    actualizarEstadoEvolucionJardinera($idJardinera);
-                }else{
-                    //Si el porcentaje del seguimiento no llega al puntaje necesario, mantener la fase actual
-                    $nuevaFase = $idFase;
-                    $_SESSION["alerta"] = "jardineraNoEvolucionada";
                 }
-            }else{
-                $_SESSION["alerta"] = "errorAlRegistrarEvolucion";
             }
-        }
 
-        //Si la pagina actual es profile, mostrar alertas
-        if($page=="profile"){
-            //Procesador para evaluar las posibles alertas de todas las jardineras del usuario que ingreso
-            include("procesadorAlertas.php");
 
-            //Consultar las alertas asociadas a un usuario
-            $resultadoConsultarAlertas=consultarAlertas($usuarioActivo);
+        //==
 
-            $alertas = [];
-            //Arreglo con los tipos de alertas de factores externos permitidos
-            $alertasFactoresExternos=[
-                "bajaHumedad",
-                "altaumedad", 
-                "bajaTemperatura", 
-                "altaTemperatura", 
-                "bajaCantidadAgua", 
-                "altaCantidadAgua", 
-                "climaInadecuado"
-            ];
+        //== JARDINERA ==
+            //Crear una nueva jardinera
+            if(isset($_POST["btn-crearJardinera"])){
+                //Consulta para verificar la cantidad de jardineras que tiene un usuario activo
+                $resultadoConsultarCantidadJardineras=consultarCantidadJardineras($usuarioActivo);
 
-            //Arreglo con los tipos de alertas de fecha permitidos
-            $alertasFechas=[
-                "proximoDesarrolloVegetativo",
-                "enGerminacion",
-                "terminandoGerminacion",
+                //Evalua si encuentra un registro del usuario activo para verificar la cantidad de jardineras que tiene
+                if(mysqli_num_rows($resultadoConsultarCantidadJardineras)>0){
+                    $datosConsulta=arregloDatos($resultadoConsultarCantidadJardineras);
 
-                "proximoFloracion",
-                "enDesarrolloVegetativo",
-                "terminandoDesarrolloVegetativo",
+                    //Evalua si el usuario activo ha alcanzado el limite de jardineras permitidas para registrar
+                    if($datosConsulta["usuCantidadJardineras"]>=5){
+                        $_SESSION["alerta"]="limiteJardineras";
+                    }else{
+                        //El sistema procede a recuperar los datos y registrar una nueva jardinera para el usuario activo
+                        $nombreJardinera=ucwords(strtolower(trim($_POST["gardenName"])));
+                        $descripcionJardinera=ucfirst(strtolower(trim($_POST["gardenDescription"])));
+                        $semillaJardinera=trim($_POST["gardenSeed"]);
 
-                "proximoLlenadoGranos",
-                "enFloracion",
-                "terminandoFloracion",
+                        //Si el resultado de la consulta es exitoso
+                        if(agregarJardinera($nombreJardinera, $descripcionJardinera, $semillaJardinera, $usuarioActivo)){
+                            //Consulta para recuperar la cantidad de jardineras que tiene el usuario activo
+                            $datosUsuario=consultarDatosUsuario($usuarioActivo);
+                            //Recuperar la cantidad de jardineras del usuario
+                            $cantidadJardineras=$datosUsuario["usuCantidadJardineras"];
 
-                "proximoCosecha",
-                "enLlenadoGranos",
-                "terminandoLlenadoGranos",
+                            //Incrementar la cantidad de jardineras que tiene el usuario
+                            $cantidadJardineras=$cantidadJardineras+1;
+                            
+                            //Si el resultado de la actualizacion es exitosa
+                            if(actualizarCantidadJardinerasUsuario($usuarioActivo, $cantidadJardineras)){
+                                //Registrar la actividad del usuario
+                                registrarActividadUsuario("Jardinera","Crear", "Registró una nueva jardinera", $usuarioActivo); 
 
-                "proximoCulminarCiclo",
-                "enCosecha",
-                "terminandoCosecha"
-            ];
-
-            //Mientras el usuario tenga alertas activas
-            while($row = mysqli_fetch_assoc($resultadoConsultarAlertas)){
-                //Evaluar si el tipo de la alerta se encuentra dentro de los tipos permitidos de factores externos
-                if(in_array($row["alerTipo"], $alertasFactoresExternos) && $row["alerEstado"]=="Activa"){
-                    $simbolo = ($row['alerTipo']==="bajaCantidadAgua" || $row['alerTipo']==="altaCantidadAgua" ) ? "mL" : "º";
-                    //Almacenar el contenido de la alerta en un arreglo unidimensional
-                    $alertas[] = [
-                        "id" => $row["idAlerta"],
-                        "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
-                                <b>Semilla: </b> {$row['semNombre']}<br>
-                                <b>Fecha: </b> {$row['alerFecha']}<br>
-                                <b>Alerta: </b> {$row['alerDescripcion']}<br>
-                                <b>Recomendación: </b> {$row['alerRecomendacion']}<br>
-                                <b>Valor Obtenido: </b> {$row['alerValorRegistrado']}{$simbolo}<br>
-                                <b>Rango Recomendado: </b> {$row['alerRangoRecomendado']}"
-                    ];
-
-                    //Enviar correo de notificación al usuario por cada alerta activa
-                    include("../php/mailNotificacionAlerta.php");
-
-                //Evaluar si el tipo de la alerta se encuentra dentro de los tipos permitidos de fechas
-                }elseif(in_array($row["alerTipo"], $alertasFechas) && $row["alerEstado"]=="Activa"){
-                    //Almacenar el contenido de la alerta en un arreglo unidimensional
-                    $alertas[] = [
-                        "id" => $row["idAlerta"],
-                        "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
-                                <b>Semilla: </b> {$row['semNombre']}<br>
-                                <b>Fecha: </b> {$row['alerFecha']}<br>
-                                <b>Alerta: </b> {$row['alerDescripcion']}<br>
-                                <b>Recomendación: </b> {$row['alerRecomendacion']}<br>"
-                    ];
-
-                    //Enviar correo de notificación al usuario por cada alerta activa
-                    include("../php/mailNotificacionAlertaFecha.php");
-                }  
+                                //Redireccionar al usuario a la página de mis jardineras para mostrar la nueva jardinera registrada
+                                header("Location: homeUsuario.php?page=gardens");
+                                exit();
+                            }else{
+                                //Mostrar mensaje de error
+                                $_SESSION["alerta"]="registroFallidoJardinera";
+                            }
+                        }else{
+                            //Mostrar mensaje de error
+                            $_SESSION["alerta"]="registroFallidoJardinera";
+                        }
+                    }
+                }else{
+                    //Mostrar mensaje de error
+                    $_SESSION["alerta"]="errorConsulta";
+                }
             }
-        }    
-        if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["idAlerta"])) {
-            $idAlerta=$_POST["idAlerta"];
 
-            actualizarEstadoAlerta($idAlerta);
+            //Actualizar los datos de una jardinera
+            if(isset($_POST["actualizarJardineraBtn"])){
+                //Recuperar el id de la jardinera a actualizar desde el formulario
+                $idJardinera=$_POST["gardenId"];
+            
+                //Recuperar los datos ingresados por el usuario desde el formulario
+                $nombreJardinera = ucwords(strtolower(trim($_POST["updateGardenName"])));
+                $descripcionJardinera = ucfirst(strtolower(trim($_POST["updateGardenDescription"])));
 
-            registrarActividadUsuario("Alerta","Confirmar", "Usuario confirmó la alerta activa Nº {$idAlerta} de alguna de sus jardineras", $usuarioActivo);
+                //Consultar los datos actuales de la jardinera a actualizar
+                $datosJardinera=consultarDatosJardineraPorId($idJardinera);
 
-            echo json_encode(["ok" => true]);
+                //Actualizar el nombre de la jardinera
+                $_SESSION["nuevoNombreJardinera"] = ($nombreJardinera!="") ? $nombreJardinera : $datosJardinera["jarNombre"];
 
-            exit();
-        }
+                //Actualizar la descripcion de la jardinera
+                $_SESSION["nuevaDescripcionJardinera"] = ($descripcionJardinera!="") ? $descripcionJardinera : $datosJardinera["jarDescripcion"];
+
+                //Actualizar los valores de la jardinera con sus nuevos valores almacenados en las sesiones
+                $nombreJardinera=$_SESSION["nuevoNombreJardinera"];
+                $descripcionJardinera=$_SESSION["nuevaDescripcionJardinera"];
+
+                if(actualizarJardinera($idJardinera, $nombreJardinera, $descripcionJardinera)){
+                    //Registrar la actividad del usuario
+                    registrarActividadUsuario("Jardinera","Actualizar", "Actualizó los datos de la jardinera: {$nombreJardinera}", $usuarioActivo);
+
+                    $_SESSION["alerta"]="jardineraActualizada";
+                }else{
+                    $_SESSION["alerta"]="errorAlActualizarJardinera";
+                }
+            }
+        
+        //==
+        
+        //== FACTORES EXTERNOS ==
+            //Agregar factores externos de una jardinera
+            if(isset($_POST["agregarFactoresExternosBtn"])){
+                //Recuperar el id de la jardinera a actualizar desde el formulario
+                $idJardinera=$_POST["gardenSelectedId"];
+
+                //Recuperar los valores del formulario
+                $humedad=trim($_POST["humidity"]);
+                $cantidadAgua=trim($_POST["amountWater"]);
+                $temperatura=trim($_POST["temperature"]);
+                $clima=trim($_POST["weather"]);
+
+                //Si el registro es exitoso
+                if(agregarFactoresExternos($idJardinera, $humedad, $cantidadAgua, $temperatura, $clima)){
+                    //Registrar la actividad del usuario
+                    registrarActividadUsuario("Factores Externos","Crear", "Agregó factores externos para la jardinera N° {$idJardinera}", $usuarioActivo);
+
+                    $_SESSION["alerta"]="factorExternoRegistrado";
+
+                //Si el registro no es exitoso
+                }else{
+                    $_SESSION["alerta"]="errorAlRegistrarFactor";
+                }
+            }
+        
+        //==
+
+        //== EVOLUCION 
+            //Agregar evolucion de una jardinera
+            if(isset($_POST["agregarEvolucionBtn"])){
+                //Recuperar los valores del formulario
+                $idJardinera = trim($_POST["gardenEvolutionId"]);
+                $idFase = trim($_POST["faseEvolutionId"]);
+                $notaEvolucion = ucfirst(strtolower(trim($_POST["notaEvolucion"])));
+
+                //Inicializar la variable de la ruta del imagen
+                $rutaImagen = ""; 
+
+                // Validar y procesar la imagen de evolución si se ha subido una
+                if(isset($_FILES['imagenEvolucion']) && $_FILES['imagenEvolucion']['error'] == 0){
+                    //Recuperar el nombre de la imagen
+                    $nombre = $_FILES['imagenEvolucion']['name'];
+                    //Recuperar la ruta temporal de la imagen
+                    $rutaTemp = $_FILES['imagenEvolucion']['tmp_name'];
+                    //Recuperar el tamaño de la imagen
+                    $size = $_FILES['imagenEvolucion']['size'];
+
+                    //Validar la extension y el tamaño de la imagen
+                    $extension = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
+
+                    //Arreglo con las extensiones permitidas
+                    $extPermitidas = ['jpg','jpeg','png','webp'];
+
+                    //Si la extension de la imagen se encuentra dentro de las extensiones permitidas y el tamaño 
+                    if(in_array($extension, $extPermitidas) && $size <= 2*1024*1024){
+
+                        //Renombrar la imagen con un nombre unico utilizando la función uniqid y la extension original de la imagen
+                        $nombreF = uniqid("img_") . "." . $extension;
+
+                        //Recuperar la ruta de la image
+                        $rutaDestino = "../images/seguimiento/" . $nombreF;
+
+                        //Mover la imagen a la carpeta de destino y actualizar la ruta de la imagen en la base de datos
+                        if(move_uploaded_file($rutaTemp, $rutaDestino)){
+                            $rutaImagen = $rutaDestino;
+                        }else{
+                            $_SESSION["alerta"] = "errorSubidaImagen";
+                            return;
+                        }
+                    }else{
+                        $_SESSION["alerta"] = "formatoImagenInvalido";
+                        return;
+                    }
+                }
+
+                //Inicializar la variable que almacena el total del porcentaje
+                $totalPorcentaje = 0;
+
+                //Para cada pregunta del formulario, si el nombre del input comienza con "preg_", se recupera el valor de la respuesta y se suma al total del porcentaje
+                foreach($_POST as $key => $value){
+                    if(strpos($key, "preg_") === 0){
+                        $idPregunta = str_replace("preg_", "", $key);
+                        $respuesta = $value;
+                        //Incrementar el porcentaje 
+                        $totalPorcentaje += $respuesta;
+                    }
+                }
+
+                //Registrar la evolución de la jardinera en la base de datos, incluyendo la nota, la ruta de la imagen y el porcentaje total obtenido
+                $fechaRegistroEvolucion= agregarEvolucionJardinera(
+                    $idJardinera, 
+                    $notaEvolucion, 
+                    $rutaImagen, 
+                    $totalPorcentaje
+                );
+
+                //Si el registro es exitoso
+                if($fechaRegistroEvolucion!=false){
+                    //Registrar la actividad del usuario
+                    registrarActividadUsuario("Evolución Jardinera","Crear", "Agregó evolución para la jardinera N° {$idJardinera}", $usuarioActivo);
+
+                    $_SESSION["alerta"] = "evolucionRegistrada"; 
+                
+                    //Si el porcentaje del seguimiento es igual a 100
+                    if($totalPorcentaje === 100){
+                        //Obtener los datos de la jardinera
+                        $datosJardinera=consultarDatosJardineraPorId($idJardinera);
+
+                        //Obtener los datos de la semilla
+                        $datosSemilla=consultarDatosSemilla($datosJardinera["idSemilla"]);
+
+                        //Obtener los datos de la etapa de crecimiento de la semilla de la jardinera
+                        $datosEtapaCrecimiento=consultarDatosEtapaCrecimiento($datosSemilla["idEtapaCrecimiento"]);
+                        
+                        //Evaluar en que fase se encuentra actualmente la jardinera
+                        switch($idFase){
+
+                            //Si la fase es germinacion, pasa a desarrollo vegetativo
+                            case 1: 
+                                //Recuperar los dias minimos de cada fase actual 
+                                $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasDesarrolloVegetativoMin"];
+                                $nuevaFase = 2; 
+                            break;
+
+                            //Si la fase es desarrollo vegetativo, pasa a floracion
+                            case 2: 
+                                //Recuperar los dias minimos de cada fase actual 
+                                $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasFloracionMin"];
+                                $nuevaFase = 3; 
+                            break;
+
+                            //Si la fase es floracion, pasa a llenado de granos
+                            case 3: 
+                                //Recuperar los dias minimos de cada fase actual 
+                                $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasLlenadoGranosMin"];
+                                $nuevaFase = 4; 
+                            break;
+
+                            //Si la fase es llenado de granos, pasa a cosecha
+                            case 4: 
+                                //Recuperar los dias minimos de cada fase actual 
+                                $diasMinimos= $datosEtapaCrecimiento["etapaCreDiasCosechaMin"];
+                                $nuevaFase = 5; 
+                            break;
+
+                            default: 
+                                $nuevaFase = $idFase;
+                        }
+
+                        //Calcular la diferencia de dias entre la fecha de creacion de la jardinera y la fecha actual
+                        $diferenciaFechas=calcularDiasEntreFechas($datosJardinera["jarFechaCreacion"], $fechaActual);
+
+                        if($diferenciaFechas>=$diasMinimos){  
+                            //Obtener el porcentaje de la nueva fase de la jardinera
+                            $datosFase = consultarDatosFase($nuevaFase);
+                            $porcentajeFase = $datosFase["fasePorcentaje"];
+
+                            //Actualizar el porcentaje y la fase de la jardinera
+                            $resultadoActualizarEvolucion = actualizarEvolucionJardinera(
+                                $idJardinera, 
+                                $porcentajeFase, 
+                                $nuevaFase
+                            );
+
+                            //Si el resultado de la actualización es exitoso, mostrar un mensaje de éxito
+                            if($resultadoActualizarEvolucion){
+                                $_SESSION["alerta"] = "jardineraEvolucionada";
+                            }
+                            
+                        }else{
+                            //Mostrar una alerta cuando la jardinera no cumple los dias minimos para pasar de fase
+                            $_SESSION["alerta"] = "tiempoInsuficienteEvolucion";
+                        }
+
+                        //Actualizar el estado del registro de la evolucion 
+                        actualizarEstadoEvolucionJardinera($idJardinera);
+                    }else{
+                        //Si el porcentaje del seguimiento no llega al puntaje necesario, mantener la fase actual
+                        $nuevaFase = $idFase;
+                        $_SESSION["alerta"] = "jardineraNoEvolucionada";
+                    }
+                }else{
+                    $_SESSION["alerta"] = "errorAlRegistrarEvolucion";
+                }
+            }
+        //==
+
+        //== ALERTAS 
+            //Si la pagina actual es profile, mostrar alertas
+            if($page=="profile"){
+                //Procesador para evaluar las posibles alertas de todas las jardineras del usuario que ingreso
+                include("procesadorAlertas.php");
+
+                //Consultar las alertas asociadas a un usuario
+                $resultadoConsultarAlertas=consultarAlertas($usuarioActivo);
+
+                $alertas = [];
+                //Arreglo con los tipos de alertas de factores externos permitidos
+                $alertasFactoresExternos=[
+                    "bajaHumedad",
+                    "altaHumedad", 
+                    "bajaTemperatura", 
+                    "altaTemperatura", 
+                    "bajaCantidadAgua", 
+                    "altaCantidadAgua", 
+                    "climaInadecuado"
+                ];
+
+                //Arreglo con los tipos de alertas de fecha permitidos
+                $alertasFechas=[
+                    "proximoDesarrolloVegetativo",
+                    "enGerminacion",
+                    "terminandoGerminacion",
+
+                    "proximoFloracion",
+                    "enDesarrolloVegetativo",
+                    "terminandoDesarrolloVegetativo",
+
+                    "proximoLlenadoGranos",
+                    "enFloracion",
+                    "terminandoFloracion",
+
+                    "proximoCosecha",
+                    "enLlenadoGranos",
+                    "terminandoLlenadoGranos",
+
+                    "proximoCulminarCiclo",
+                    "enCosecha",
+                    "terminandoCosecha"
+                ];
+
+                //Mientras el usuario tenga alertas activas
+                while($row = mysqli_fetch_assoc($resultadoConsultarAlertas)){
+                    //Evaluar si el tipo de la alerta se encuentra dentro de los tipos permitidos de factores externos
+                    if(in_array($row["alerTipo"], $alertasFactoresExternos) && $row["alerEstado"]=="Activa"){
+                        $simbolo = ($row['alerTipo']==="bajaCantidadAgua" || $row['alerTipo']==="altaCantidadAgua" ) ? "mL" : "º";
+                        //Almacenar el contenido de la alerta en un arreglo unidimensional
+                        $alertas[] = [
+                            "id" => $row["idAlerta"],
+                            "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
+                                    <b>Semilla: </b> {$row['semNombre']}<br>
+                                    <b>Fecha: </b> {$row['alerFecha']}<br>
+                                    <b>Alerta: </b> {$row['alerDescripcion']}<br>
+                                    <b>Recomendación: </b> {$row['alerRecomendacion']}<br>
+                                    <b>Valor Obtenido: </b> {$row['alerValorRegistrado']}{$simbolo}<br>
+                                    <b>Rango Recomendado: </b> {$row['alerRangoRecomendado']}"
+                        ];
+
+                        //Enviar correo de notificación al usuario por cada alerta activa
+                        $tipoCorreo = "factores";
+                        include("../php/mailNotificacionAlerta.php");
+
+                    //Evaluar si el tipo de la alerta se encuentra dentro de los tipos permitidos de fechas
+                    }elseif(in_array($row["alerTipo"], $alertasFechas) && $row["alerEstado"]=="Activa"){
+                        //Almacenar el contenido de la alerta en un arreglo unidimensional
+                        $alertas[] = [
+                            "id" => $row["idAlerta"],
+                            "html" => "<b>Jardinera: </b> {$row['jarNombre']}<br>
+                                    <b>Semilla: </b> {$row['semNombre']}<br>
+                                    <b>Fecha: </b> {$row['alerFecha']}<br>
+                                    <b>Alerta: </b> {$row['alerDescripcion']}<br>
+                                    <b>Recomendación: </b> {$row['alerRecomendacion']}<br>"
+                        ];
+
+                        //Enviar correo de notificación al usuario por cada alerta activa
+                        $tipoCorreo = "fechas";
+                        include("../php/mailNotificacionAlerta.php");
+                    }  
+                }
+            }    
+
+            //Si el usuario acepta una alerta, actualizar su estado a inactiva
+            if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["idAlerta"])) {
+                $idAlerta=$_POST["idAlerta"];
+
+                actualizarEstadoAlerta($idAlerta);
+
+                registrarActividadUsuario("Alerta","Confirmar", "Usuario confirmó la alerta activa Nº {$idAlerta} de alguna de sus jardineras", $usuarioActivo);
+
+                echo json_encode(["ok" => true]);
+
+                exit();
+            }                      
+        //==   
     ?>
     <script>
         //Almacenar el valor del arreglo en php en una constante en js
@@ -1863,8 +2010,38 @@
                             rutaFalse: "homeUsuario.php?page=gardenEvolution"
                         })
                     </script>
-                <?php
+                    <?php
                 break; 
+
+                case "errorAlEnviarCorreoSolicitud": ?>
+                    <script>
+                        mostrarMensaje({
+                            title:"¡Error a la hora de enviar el correo electrónico!",
+                            text:"Recargue la página y vuelva a intentarlo",
+                            icon:"error",
+
+                            rutaTrue:"homeUsuario.php?page=request",
+
+                            rutaFalse:"homeUsuario.php?page=request"
+                        });
+                    </script>
+                    <?php
+                break;
+
+                case "errorAlEnviarCorreoAlerta": ?>
+                    <script>
+                        mostrarMensaje({
+                            title:"¡Error a la hora de enviar el correo electrónico!",
+                            text:"Recargue la página y vuelva a intentarlo",
+                            icon:"error",
+
+                            rutaTrue:"homeUsuario.php?page=profile",
+
+                            rutaFalse:"homeUsuario.php?page=profile"
+                        });
+                    </script>
+                    <?php
+                break;   
             }
             unset($_SESSION["alerta"]);
         }

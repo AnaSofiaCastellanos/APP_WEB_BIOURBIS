@@ -263,6 +263,25 @@
                     </script>
                     <?php
                 break;
+
+                case "errorAlEnviarCorreo": ?>
+                    <script>
+                        mostrarMensaje({
+
+                            title:"¡Error a la hora de enviar el correo electrónico!",
+
+                            text:"Recargue la página y vuelva a intentarlo",
+
+                            icon:"error",
+
+                            rutaTrue:"../forms/formRecuperarContrasena.php",
+
+                            rutaFalse:"../forms/formRecuperarContrasena.php"
+
+                        });
+                    </script>
+                    <?php
+                break;
             }
             unset($_SESSION["alerta"]);
         }

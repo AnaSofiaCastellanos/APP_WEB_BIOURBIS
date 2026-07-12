@@ -44,6 +44,9 @@
         //Incluir las funciones de la app
         include ("../functions/funciones.php");
 
+        //Recuperar la fecha actual del equipo
+        $fechaActual=recuperarFechaActual();
+
         //Llamar la función que realiza la consulta de todas las semillas
         $resultadoConsultarSemillas=consultarSemillasActivasConFichaYEtapa(false);
 
@@ -67,11 +70,26 @@
                 $_SESSION["alerta"]="semillaExistente";
 
             }else{
-                if(registrarSolicitud($tipoSolicitud, $mensaje)){
+                if(registrarSolicitud($fechaActual, $tipoSolicitud, $mensaje)){
                     $_SESSION["alerta"]="solicitudRegistrada";
 
+                    require_once("../functions/enviarCorreos.php");
+
                     //Enviar correo electrónico para confirmar su solicitud 
-                    include("mailConfirmacionSolicitud.php");
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Solicitud recibida con éxito",
+                        correoSolicitudEnviada(
+                            $nombre,
+                            $tipoSolicitud,
+                            $mensaje
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"]="errorAlEnviarCorreo";
+                    }
 
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Solicitud","Crear", "Registró una nueva solicitud", null); 
@@ -297,6 +315,22 @@
 
                             rutaTrue: "catalogoSemillas.php",
                             rutaFalse: "catalogoSemillas.php"
+                        });
+                    </script>
+                    <?php
+                break;
+
+                case "errorAlEnviarCorreo": ?>
+                    <script>
+                        mostrarMensaje({
+
+                            title:"¡Error a la hora de enviar el correo electrónico!",
+                            text:"Recargue la página y vuelva a intentarlo",
+                            icon:"error",
+
+                            rutaTrue:"catalogoSemillas.php",
+
+                            rutaFalse:"catalogoSemillas.php"
                         });
                     </script>
                     <?php

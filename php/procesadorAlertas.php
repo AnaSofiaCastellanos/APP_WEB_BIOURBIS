@@ -72,7 +72,7 @@
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
                         //Registrar la actividad del usuario
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
                         
                         $alertasExistentes[$tipo] = true;
                     }
@@ -92,7 +92,7 @@
                         //Registra la alerta generada en la tabla de alertas de la base de datos
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -113,7 +113,7 @@
                         //Registra la alerta generada en la tabla de alertas de la base de datos
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -133,7 +133,7 @@
                         //Registra la alerta generada en la tabla de alertas de la base de datos
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }  
@@ -154,7 +154,7 @@
                         //Registra la alerta generada en la tabla de alertas de la base de datos
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -174,7 +174,7 @@
                         //Registra la alerta generada en la tabla de alertas de la base de datos
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -196,7 +196,7 @@
                         //Registra la alerta generada en la tabla de alertas de la base de datos
                         registrarAlerta($fechaActual, $tipo, $mensajeAlerta, $recomendacionAlerta, $valorRegistrado, $rangoRecomendado,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -237,7 +237,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -254,7 +254,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -271,7 +271,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -300,7 +300,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -317,7 +317,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -334,7 +334,7 @@
                        
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -363,7 +363,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -379,7 +379,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -396,7 +396,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }                   
@@ -425,7 +425,7 @@
                        
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -442,7 +442,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -459,7 +459,7 @@
                        
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }                   
@@ -484,7 +484,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -501,7 +501,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }
@@ -518,7 +518,7 @@
 
                         registrarAlerta($fechaActual, $tipo,$mensajeAlerta,$recomendacionAlerta,null,null,$idJardinera);
 
-                        registrarActividadUsuario("Alerta","Generar", "El sisteama generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
+                        registrarActividadUsuario("Alerta","Generar", "El sistema generó una alerta activa  para la jardinera Nº{$idJardinera}", $usuarioActivo);
 
                         $alertasExistentes[$tipo] = true;
                     }                   

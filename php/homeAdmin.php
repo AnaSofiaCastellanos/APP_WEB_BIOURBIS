@@ -34,6 +34,9 @@
         //Abrir la conexion a la base de datos 
         $conexion_db=abrirConexionDB();
 
+        //Recuperar la fecha actual
+        $fechaActual = recuperarFechaActual();
+
         //Consultar los datos del usuario que inicio sesión
         $datosAdmin=consultarDatosUsuario($usuarioActivo);
 
@@ -192,14 +195,42 @@
 
                 $resultadoActualizarPerfilUsuario=actualizarUsuario($nuevoNombre, $nuevoTipoUsuario, $nuevoTipoDocumento, $nuevoCorreo, $nuevoEstadoCorreo, $nuevoBarrio, $nuevoAvatar, $nuevaCantidadJardineras, $id);
                 if($resultadoActualizarPerfilUsuario){
-                    //Ejecutar mensaje de que los datos se actualizaron correctamente
-                    $_SESSION["alerta"]="usuarioActualizado";
+
+                    //Enviar correo electrónico para notificar al usuario su modificacion
+                    require_once("../functions/enviarCorreos.php");
+
+                    //Administrador que realizó la actualización
+                    $nombreAdmin = $datosAdmin["usuNombre"];
+
+                    //Usuario actualizado
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    //Enviar correo
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+
+                        "BioUrbis - Actualización de la información de su cuenta",
+
+                        correoActualizacionCuenta(
+                            $nombre,
+                            $nombreAdmin,
+                            $fechaActual,
+                            $datosUsuario["usuNumeroDocumento"]
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
 
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Perfil Usuario","Actualizar", "Actualizó la información personal del usuario identificado con N° {$id}", $usuarioActivo);
 
-                    //Enviar correo electrónico para notificar al usuario su modificacion
-                    include("../php/mailNotificarActualizacionUsuario.php");
+                    //Ejecutar mensaje de que los datos se actualizaron correctamente
+                    $_SESSION["alerta"]="usuarioActualizado";
+
                 }else{
                     $_SESSION["alerta"]="errorDeActualizacion";
                 }
@@ -214,14 +245,39 @@
                 $estado = ($datosUsuario["usuEstado"]==="Activo") ? "Inactivo": "Activo";
 
                 if(actualizarEstadoUsuario($id, $estado)){
-                    //Ejecutar mensaje de que los datos se actualizaron correctamente
-                    $_SESSION["alerta"]="estadoUsuarioActualizado";
+                    //Enviar correo electrónico para notificar al usuario su inactivacion
+                    require_once("../functions/enviarCorreos.php");
+
+                    //Administrador que realizó el cambio
+                    $nombreAdmin = $datosAdmin["usuNombre"];
+
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    //Enviar correo
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Modificación del estado de su cuenta",
+
+                        correoModificacionEstadoCuenta(
+                            $nombre,
+                            $nombreAdmin,
+                            $fechaActual,
+                            $datosUsuario["usuNumeroDocumento"]
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"]="errorAlEnviarCorreoInformativo";
+                    }
 
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Perfil Usuario","Activar/Inactivar", "Modificó el estado de la cuenta del usuario identificado con N° {$id}", $usuarioActivo);
 
-                    //Enviar correo electrónico para notificar al usuario su inactivacion
-                    include("../php/mailNotificarActualizacionEstadoUsuario.php");
+                    //Ejecutar mensaje de que los datos se actualizaron correctamente
+                    $_SESSION["alerta"]="estadoUsuarioActualizado";
                 }else{
                     $_SESSION["alerta"]="errorDeActualizacionEstado";
                 }
@@ -235,11 +291,40 @@
                 $estado="Confirmada";
 
                 if(actualizarEstadoSolicitud($id, $estado)){
-                    //Ejecutar mensaje de que los datos se actualizaron correctamente
-                    $_SESSION["alerta"]="estadoSolicitudActualizado";
+                    $datosSolicitud=consultarDatosSolicitud($id);
+                    $tipoSolicitud=$datosSolicitud["soliAsunto"];
+
+                    if($datosSolicitud["usuNumeroDocumento"]!==null){
+                        require_once("../functions/enviarCorreos.php");
+                        
+                        $datosUsuario=consultarDatosUsuario($datosSolicitud["usuNumeroDocumento"]);
+
+                        //Usuario al que se le modificó la cuenta
+                        $correo = $datosUsuario["usuCorreo"];
+                        $nombre = $datosUsuario["usuNombre"];
+
+                        //Enviar correo
+                        $enviado = enviarCorreo(
+                            $correo,
+                            $nombre,
+                            "BioUrbis - Confirmación de su solicitud",
+
+                            correoSolicitudConfirmada(
+                                $nombre,
+                                $tipoSolicitud
+                            )
+                        );
+
+                        if(!$enviado){
+                            $_SESSION["alerta"]="errorAlEnviarCorreoInformativo";
+                        }
+                    }
 
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Solicitud","Confirmar", "Confirmación de la solicitud N° {$id}", $usuarioActivo);
+
+                    //Ejecutar mensaje de que los datos se actualizaron correctamente
+                    $_SESSION["alerta"]="estadoSolicitudActualizado";
                 }else{
                     $_SESSION["alerta"]="errorDeActualizacionEstado";
                 }
@@ -251,11 +336,40 @@
                 $estado="Rechazada";
 
                 if(actualizarEstadoSolicitud($id, $estado)){
-                    //Ejecutar mensaje de que los datos se actualizaron correctamente
-                    $_SESSION["alerta"]="estadoSolicitudActualizado";
+                    require_once("../functions/enviarCorreos.php");
+
+                    $datosSolicitud=consultarDatosSolicitud($id);
+                    $tipoSolicitud=$datosSolicitud["soliAsunto"];
+
+                    if($datosSolicitud["usuNumeroDocumento"]!==null){
+                        $datosUsuario=consultarDatosUsuario($datosSolicitud["usuNumeroDocumento"]);
+                        
+                        //Usuario al que se le modificó la cuenta
+                        $correo = $datosUsuario["usuCorreo"];
+                        $nombre = $datosUsuario["usuNombre"];
+
+                        //Enviar correo
+                        $enviado = enviarCorreo(
+                            $correo,
+                            $nombre,
+                            "BioUrbis - Rechazo de su solicitud",
+
+                            correoSolicitudRechazada(
+                                $nombre,
+                                $tipoSolicitud
+                            )
+                        );
+
+                        if(!$enviado){
+                            $_SESSION["alerta"]="errorAlEnviarCorreoInformativo";
+                        }
+                    }
 
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Solicitud","Rechazar", "Rechazo de la solicitud N° {$id}", $usuarioActivo);
+
+                    //Ejecutar mensaje de que los datos se actualizaron correctamente
+                    $_SESSION["alerta"]="estadoSolicitudActualizado";
                 }else{
                     $_SESSION["alerta"]="errorDeActualizacionEstado";
                 }
@@ -272,11 +386,29 @@
                 $estado = ($datosResena["resenaEstado"]==="Activa") ? "Inactiva" : "Activa";
 
                 if(actualizarEstadoResena($id, $estado)){
-                    //Ejecutar mensaje de que los datos se actualizaron correctamente
-                    $_SESSION["alerta"]="estadoResenaActualizado";
+                    require_once("../functions/enviarCorreos.php");
+
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosResena["resenaCorreo"];
+                    $nombre = $datosResena["resenaNombreUsuario"];
+
+                    //Enviar correo
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Su reseña ha sido desactivada",
+                        correoResenaBloqueada($nombre)
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"]="errorAlEnviarCorreoInformativo";
+                    }
 
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Reseña","Actualizar", "Actualizar el estado de la reseña N° {$id}", $usuarioActivo);
+
+                    //Ejecutar mensaje de que los datos se actualizaron correctamente
+                    $_SESSION["alerta"]="estadoResenaActualizado";
                 }else{
                     $_SESSION["alerta"]="errorDeActualizacionEstado";
                 }
@@ -306,11 +438,11 @@
                     move_uploaded_file($tmpImagen, $rutaImagenJardinera);
 
                     if(agregarSemilla($nombre, $rutaImagenJardinera, $observaciones, $tipoSemilla)){
-                        //Ejecutar mensaje de que los datos se actualizaron correctamente
-                        $_SESSION["alerta"]="semillaRegistrada";
-
                         //Registrar la actividad del usuario
                         registrarActividadUsuario("Semilla","Agregar", "Agregó una nueva semilla", $usuarioActivo);
+
+                        //Ejecutar mensaje de que los datos se actualizaron correctamente
+                        $_SESSION["alerta"]="semillaRegistrada";
                     }else{
                         $_SESSION["alerta"]="errorDeRegistro";
                     }
@@ -361,11 +493,11 @@
                 $nuevoTipoSemilla=$_SESSION["nuevoTipoSemilla"];
 
                 if(actualizarSemilla($id, $nuevoNombre,  $nuevaImagen, $nuevaObservacion, $nuevoTipoSemilla)){
-                    //Ejecutar mensaje de que los datos se actualizaron correctamente
-                    $_SESSION["alerta"]="semillaActualizada";
-
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Semilla","Actualizar", "Actualizó la semilla N° {$id}", $usuarioActivo);
+                    
+                    //Ejecutar mensaje de que los datos se actualizaron correctamente
+                    $_SESSION["alerta"]="semillaActualizada";
                 }else{
                     $_SESSION["alerta"]="errorDeActualizacion";
                 }
@@ -382,11 +514,11 @@
                 $estado = ($datosSemilla["semEstado"] === "Activa") ? "Inactiva" : "Activa";
 
                 if(actualizarEstadoSemilla($id, $estado)){
-                    //Mostrar mensaje de éxito
-                    $_SESSION["alerta"] = "estadoSemillaActualizado";
-
                     //Registrar actividad
                     registrarActividadUsuario("Semilla","Actualizar","Actualizó el estado de la semilla N° {$id}",$usuarioActivo);
+
+                    //Mostrar mensaje de éxito
+                    $_SESSION["alerta"] = "estadoSemillaActualizado";
                 }else{
                     $_SESSION["alerta"] = "errorDeActualizacionEstado";
                 }
@@ -402,11 +534,11 @@
                     $_SESSION["alerta"]="errorDeRegistroExistente";
                 }else{
                     if(registrarTipoSemilla($descripcion)){
-                        //Ejecutar mensaje de que los datos se registraron correctamente
-                        $_SESSION["alerta"] = "tipoSemillaRegistrado";
-
                         //Registrar la actividad del usuario
                         registrarActividadUsuario("Tipo de Semilla","Registrar", "Registró un nuevo tipo de semilla",$usuarioActivo);
+
+                        //Ejecutar mensaje de que los datos se registraron correctamente
+                        $_SESSION["alerta"] = "tipoSemillaRegistrado";
                     }else{
                         $_SESSION["alerta"] = "errorDeRegistro";
                     }
@@ -472,7 +604,6 @@
                 $resultadoRegistrarFichaTecnica = registrarFichaTecnica($datosFichaTecnica);
 
                 if($resultadoRegistrarFichaTecnica!=false){
-
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Ficha Técnica","Registrar","Registró una nueva ficha técnica",$usuarioActivo);
 
@@ -537,7 +668,6 @@
                 ];
 
                 if(actualizarFichaTecnica($id, $nuevosDatosFichaTecnica)){
-
                     $_SESSION["alerta"] = "fichaTecnicaActualizada";
 
                     registrarActividadUsuario("Ficha Técnica","Actualizar","Actualizó la ficha técnica N° {$id}", $usuarioActivo);
@@ -682,7 +812,6 @@
                 $resultadoRegistrarEtapaCrecimiento = registrarEtapaCrecimiento($datosEtapaCrecimiento);
 
                 if($resultadoRegistrarEtapaCrecimiento!=false){
-
                     //Registrar la actividad del usuario
                     registrarActividadUsuario("Etapa Crecimiento","Registrar","Registró una nueva etapa crecimiento",$usuarioActivo);
 
@@ -694,7 +823,6 @@
 
             //Actualizar una etapa de crecimiento
             if(isset($_POST["actualizarEtapaCrecimientoBtn"])){
-
                 $id = $_POST["updateGrowthStagesId"];
 
                 $datosEtapaCrecimiento = consultarDatosEtapaCrecimiento($id);
@@ -747,11 +875,11 @@
                     "cosechaMax" => $_SESSION["nuevaCosechaMax"]
                 ];
 
-                if(actualizarEtapaCrecimiento($id, $nuevosDatosEtapaCrecimiento)){
-
-                    $_SESSION["alerta"] = "etapaCrecimientoActualizada";
+                if(actualizarEtapaCrecimiento($id, $nuevosDatosEtapaCrecimiento)){  
 
                     registrarActividadUsuario("Etapa Crecimiento", "Actualizar", "Actualizó la etapa de crecimiento N° {$id}",$usuarioActivo);
+
+                    $_SESSION["alerta"] = "etapaCrecimientoActualizada";
                 }else{
                     $_SESSION["alerta"] = "errorDeActualizacion";
                 }
@@ -761,7 +889,6 @@
         //=== JARDINERA
             //Actualizar la jardinera
             if(isset($_POST["actualizarJardineraBtn"])){
-
                 $id = $_POST["updateGardenId"];
 
                 $datosJardinera = consultarDatosJardineraPorId($id);
@@ -781,10 +908,31 @@
                 $nuevaIdFase=$_SESSION["nuevaFaseJardinera"];
 
                 if(actualizarJardineraAdmin($id, $nuevoNombre, $nuevaDescripcion, $nuevaIdFase)){
+                    require_once("../functions/enviarCorreos.php");
 
-                    $_SESSION["alerta"] = "jardineraActualizada";
+                    $datosUsuario=consultarDatosUsuario($datosJardinera["usuNumeroDocumento"]);
+                        
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Actualización de su jardinera",
+                        correoActualizacionJardinera(
+                            $nombre,
+                            $datosJardinera["jarNombre"]
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
 
                     registrarActividadUsuario("Jardinera","Actualizar","Actualizó la jardinera N° {$id}",$usuarioActivo);
+
+                    $_SESSION["alerta"] = "jardineraActualizada";
                 }else{
                     $_SESSION["alerta"] = "errorDeActualizacion";
                 }
@@ -804,6 +952,27 @@
                 $resultadoActualizarEstadoJardinera =actualizarEstadoJardinera($id, $idUsuario, $estado);
 
                 if($resultadoActualizarEstadoJardinera!=false){
+                    require_once("../functions/enviarCorreos.php");
+
+                    $datosUsuario=consultarDatosUsuario($datosJardinera["usuNumeroDocumento"]);
+                        
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Jardinera inactivada",
+                        correoJardineraInactiva(
+                            $nombre,
+                            $datosJardinera["jarNombre"]
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
 
                     registrarActividadUsuario("Jardinera","Activar/Inactivar","Modificó el estado de la jardinera Nº {$id}", $usuarioActivo);
 
@@ -841,6 +1010,29 @@
                 $nuevaCantidadAgua=$_SESSION["nuevaCantidadAgua"];
 
                 if(actualizarFactorExterno($id, $nuevoHumedad,  $nuevoIdTipoClima, $nuevaTemperatura, $nuevaCantidadAgua)){
+                    require_once("../functions/enviarCorreos.php");
+
+                    $datosJardinera=consultarDatosJardineraPorId($datosFactorExterno["idJardinera"]);
+                    $datosUsuario=consultarDatosUsuario($datosJardinera["usuNumeroDocumento"]);
+                        
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Actualización de factor externo",
+                        correoActualizacionFactorExterno(
+                            $nombre,
+                            $datosJardinera["jarNombre"],
+                            $datosFactorExterno["idFactoresExternos"],
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
 
                     registrarActividadUsuario("Factor Externo","Actualizar","Actualizó el factor externo Nº {$id}",$usuarioActivo);
 
@@ -860,6 +1052,29 @@
                 $estado = ($datosFactorExterno["factEstado"] === "Evaluado") ? "Registrado" : "Evaluado";
 
                 if(actualizarEstadoFactorExterno($id, $estado)){
+                    require_once("../functions/enviarCorreos.php");
+
+                    $datosJardinera=consultarDatosJardineraPorId($datosFactorExterno["idJardinera"]);
+                    $datosUsuario=consultarDatosUsuario($datosJardinera["usuNumeroDocumento"]);
+                        
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Factor externo inactivado",
+                        correoInactivacionFactorExterno(
+                            $nombre,
+                            $datosJardinera["jarNombre"],
+                            $datosFactorExterno["idFactoresExternos"],
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
 
                     registrarActividadUsuario("Factor Externo","Evaluar/Registrar","Modificó el estado del factor externo Nº {$id}",$usuarioActivo);
 
@@ -904,6 +1119,31 @@
                 $nuevoPorcentaje=$_SESSION["nuevoPorcentajeMonitoreo"];
 
                 if(actualizarMonitoreoAdmin($id,$nuevaNota,$nuevaImagen,$nuevoPorcentaje)){
+                    require_once("../functions/enviarCorreos.php");
+
+                    $datosJardinera=consultarDatosJardineraPorId($datosMonitoreo["idJardinera"]);
+                    $datosUsuario=consultarDatosUsuario($datosJardinera["usuNumeroDocumento"]);
+                        
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Actualización del seguimiento de su jardinera",
+                        correoActualizacionMonitoreo(
+                            $nombre,
+                            $datosJardinera["jarNombre"],
+                            $datosMonitoreo["idSeguimiento"], 
+                            $datosMonitoreo["segJardineraFecha"]
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
+
                     registrarActividadUsuario("Monitoreo","Actualizar","Actualizó el monitoreo Nº {$id}",$usuarioActivo);
 
                     $_SESSION["alerta"] = "monitoreoActualizado";
@@ -922,6 +1162,30 @@
                 $estado = ($datosMonitoreo["segJardineraEstado"] === "Activa") ? "Inactiva" : "Activa";
 
                 if(actualizarEstadoMonitoreo($id, $estado)){
+                    require_once("../functions/enviarCorreos.php");
+
+                    $datosJardinera=consultarDatosJardineraPorId($datosMonitoreo["idJardinera"]);
+                    $datosUsuario=consultarDatosUsuario($datosJardinera["usuNumeroDocumento"]);
+                        
+                    //Usuario al que se le modificó la cuenta
+                    $correo = $datosUsuario["usuCorreo"];
+                    $nombre = $datosUsuario["usuNombre"];
+
+                    $enviado = enviarCorreo(
+                        $correo,
+                        $nombre,
+                        "BioUrbis - Monitoreo inactivado",
+                        correoInactivacionMonitoreo(
+                            $nombre,
+                            $datosJardinera["jarNombre"],
+                            $datosMonitoreo["idSeguimiento"],
+                            $datosMonitoreo["segJardineraFecha"]
+                        )
+                    );
+
+                    if(!$enviado){
+                        $_SESSION["alerta"] = "errorAlEnviarCorreoInformativo";
+                    }
 
                     registrarActividadUsuario("Monitoreo", "Activar/Inactivar", "Modificó el estado del monitoreo Nº {$id}",$usuarioActivo);
 
@@ -946,7 +1210,6 @@
                     $resultadoRegistrarFase = registrarFase($nombre,$descripcion, $porcentaje);
 
                     if($resultadoRegistrarFase !== false){
-
                         registrarActividadUsuario("Fase","Registrar","Registró una nueva fase", $usuarioActivo);
 
                         $_SESSION["alerta"] = "faseRegistrada";
@@ -978,7 +1241,6 @@
                 $porcentaje=$_SESSION["nuevoPorcentajeFase"];
 
                 if(actualizarFase($id, $nombre,$descripcion, $porcentaje )){
-
                     registrarActividadUsuario("Fase","Actualizar","Actualizó la fase Nº {$id}",$usuarioActivo);
 
                     $_SESSION["alerta"] = "faseActualizada";
@@ -997,7 +1259,6 @@
                 $estado = ($datosFase["faseEstado"] === "Activa") ? "Inactiva" : "Activa";
 
                 if(actualizarEstadoFase($id, $estado)){
-
                     registrarActividadUsuario("Fase","Activar/Inactivar","Modificó el estado de la fase Nº {$id}",$usuarioActivo);
 
                     $_SESSION["alerta"] = "estadoFaseActualizado";
@@ -1019,7 +1280,6 @@
                     $porcentaje=trim($_POST["addStageQuestionsPercentage"]);
 
                     if(registrarPreguntaFase($pregunta, $porcentaje, $idFase)){
-
                         registrarActividadUsuario("Pregunta Fase", "Registrar", "Registró una nueva pregunta para la fase Nº {$idFase}", $usuarioActivo);
 
                         $_SESSION["alerta"] = "preguntaFaseRegistrada";
@@ -1047,7 +1307,6 @@
                 $porcentaje = $_SESSION["nuevoPorcentajePreguntaFase"];
 
                 if(actualizarPreguntaFase($id, $pregunta, $porcentaje)){
-
                     registrarActividadUsuario("Pregunta Fase","Actualizar", "Actualizó la pregunta de seguimiento Nº {$id}",$usuarioActivo);
 
                     $_SESSION["alerta"] = "preguntaFaseActualizada";
@@ -1066,7 +1325,6 @@
                 $estado = ($datosPreguntaFase["pregEstado"] === "Activa") ? "Inactiva" : "Activa";
 
                 if(actualizarEstadoPreguntaFase($id,$estado)){
-
                     registrarActividadUsuario("Pregunta Fase","Activar/Inactivar","Modificó el estado de la pregunta de seguimiento Nº {$id}",$usuarioActivo);
 
                     $_SESSION["alerta"] = "estadoPreguntaFaseActualizado";
@@ -1133,6 +1391,10 @@
 
                     <li onclick="showModule('monitoring', this)">
                         <i class="fas fa-chart-bar"></i><span class="menu-text">Seguimiento Jardinera</span>
+                    </li>
+
+                    <li onclick="showModule('alerts', this)">
+                        <i class="fas fa-bell"></i><span class="menu-text">Alertas</span>
                     </li>
 
                     <li onclick="showModule('stages', this)">
@@ -1811,6 +2073,75 @@
             <section id="monitoring" class="module">
                 <div class="profile-card">
                     <h2>Seguimiento Jardinera</h2>
+
+                    <div class="monitoring-grid">
+                    <?php
+                        $resultadoConsultarTodosSeguimientos = consultarTodasSeguimientos();
+                        if(mysqli_num_rows($resultadoConsultarTodosSeguimientos)>0){
+                            while ($datosSeguimiento = mysqli_fetch_assoc($resultadoConsultarTodosSeguimientos)) {
+                                $nota = ($datosSeguimiento["segJardineraNota"] !== "") ? $datosSeguimiento["segJardineraNota"] : "Sin nota";
+                                
+                                $imagen = ($datosSeguimiento["segJardineraImagen"] !== "") ? $datosSeguimiento["segJardineraImagen"] : null; ?>
+                                <article class="monitoring-card">
+                                    <div class="monitoring-card-top">
+                                        <div class="monitoring-header-text">
+                                            <h3>Seguimiento #<?php echo $datosSeguimiento["idSeguimiento"] ?></h3>
+                                            <span
+                                                class="monitoring-label"> Fecha: <?php echo $datosSeguimiento["segJardineraFecha"] ?></span>
+                                        </div>
+                                        <div class="monitoring-avatar-group">
+                                            <?php if ($imagen) { ?>
+                                            <div class="monitoring-avatar">
+                                                <img src="<?php echo $imagen ?>" alt="Imagen de seguimiento" />
+                                            </div>
+                                            <?php } ?>
+                                            <span
+                                                class="monitoring-status <?php echo strtolower($datosSeguimiento["segJardineraEstado"]) ?>">
+                                                <?php echo $datosSeguimiento["segJardineraEstado"] ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="monitoring-card-body">
+                                        <p class="monitoring-note">Nota: <?php echo $nota ?></p>
+                                        <ul class="monitoring-meta-list">
+                                            <li><span>Jardinera</span><strong><?php echo $datosSeguimiento["jarNombre"] ?></strong>
+                                            </li>
+                                            <li><span>Porcentaje</span><strong><?php echo $datosSeguimiento["segJardineraPorcentaje"], "%" ?></strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="monitoring-actions">
+                                        <button class="table-button updateMonitoringBtn" id="updateMonitoringBtn"
+                                            data-id="<?php echo $datosSeguimiento["idSeguimiento"] ?>">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="table-button inactivateMonitoringBtn" id="inactivateMonitoringBtn"
+                                            data-id="<?php echo $datosSeguimiento["idSeguimiento"] ?>">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </div>
+                                </article>
+                            <?php
+                            }
+                        }else{
+                            ?>
+                            <div class="empty-state full-width">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h3>No hay seguimientos de jardineras disponibles</h3>
+                                <p>No existen registros de seguimientos de jardineras en el sistema. Cuando un usuario registre alguno aparecerá aquí automáticamente.</p>
+                            </div>
+                        <?php }                       
+                    ?>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ALERTS -->
+            <section id="monitoring" class="module">
+                <div class="profile-card">
+                    <h2>Alertas</h2>
 
                     <div class="monitoring-grid">
                     <?php
@@ -4245,7 +4576,20 @@
                             rutaFalse: "homeAdmin.php"
                         });
                     </script>
-                <?php
+                    <?php
+                break;
+
+                case "errorAlEnviarCorreoInformativo": ?>
+                    <script>
+                        mostrarMensaje({
+                            title:"¡Error a la hora de enviar el correo electrónico!",
+                            text:"Recargue la página y vuelva a intentarlo",
+                            icon:"error",
+                            rutaTrue:"homeAdmin.php",
+                            rutaFalse:"homeAdmin.php"
+                        });
+                    </script>
+                    <?php
                 break;
             }
             unset($_SESSION["alerta"]);

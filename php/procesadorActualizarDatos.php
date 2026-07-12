@@ -273,6 +273,21 @@
                     </script>
                     <?php
                 break;
+
+                case "errorAlEnviarCorreoActualizarDatos": ?>
+                    <script>
+                        mostrarMensaje({
+                            title:"¡Error a la hora de enviar el correo electrónico para notificar la actualización de los datos!",
+                            text:"Recargue la página y vuelva a intentarlo",
+                            icon:"error",
+
+                            rutaTrue:"homeUsuario.php",
+
+                            rutaFalse:"homeUsuario.php"
+                        });
+                    </script>
+                    <?php
+                break;
             }
             unset($_SESSION["alerta"]);
         }     
