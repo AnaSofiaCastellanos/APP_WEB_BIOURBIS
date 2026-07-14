@@ -299,6 +299,25 @@ const elementsAdminForm={
         errorDescripcionActualizarJardinera: document.getElementById("errorDescripcionActualizarJardinera"),
         errorFaseActualizarJardinera: document.getElementById("errorFaseActualizarJardinera"),
     //
+
+    // Formulario para actualizar alerta
+        formularioActualizarAlerta: document.getElementById("updateAlertForm"),
+
+        // Campos
+        idActualizarAlerta: document.getElementById("updateAlertId"),
+        tipoActualizarAlerta: document.getElementById("updateAlertType"),
+        descripcionActualizarAlerta: document.getElementById("updateAlertDescription"),
+        recomendacionActualizarAlerta: document.getElementById("updateAlertRecommendation"),
+        valorRegistradoActualizarAlerta: document.getElementById("updateAlertRecordedValue"),
+        rangoRecomendadoActualizarAlerta: document.getElementById("updateAlertRecomendedRange"),
+
+        // Errores
+        errorTipoActualizarAlerta: document.getElementById("errorTipoActualizarAlerta"),
+        errorDescripcionActualizarAlerta: document.getElementById("errorDescripcionActualizarAlerta"),
+        errorRecomendacionActualizarAlerta: document.getElementById("errorRecomendacionActualizarAlerta"),
+        errorValorRegistradoActualizarAlerta: document.getElementById("errorValorRegistradoActualizarAlerta"),
+        errorRangoRecomendadoActualizarAlerta: document.getElementById("errorRangoRecomendadoActualizarAlerta"),
+    //
     
     // Formulario para actualizar factor externo
         formularioActualizarFactorExterno: document.getElementById("updateExternalFactorForm"),
@@ -772,6 +791,15 @@ function limpiarErroresActualizarJardinera(){
     elementsAdminForm.errorSemillaActualizarJardinera.textContent = "";
     elementsAdminForm.errorDescripcionActualizarJardinera.textContent = "";
     elementsAdminForm.errorFaseActualizarJardinera.textContent = "";
+}
+
+//Alerta
+function limpiarErroresActualizarAlerta(){
+    elementsAdminForm.errorTipoActualizarAlerta.textContent = "";
+    elementsAdminForm.errorDescripcionActualizarAlerta.textContent = "";
+    elementsAdminForm.errorRecomendacionActualizarAlerta.textContent = "";
+    elementsAdminForm.errorValorRegistradoActualizarAlerta.textContent = "";
+    elementsAdminForm.errorRangoRecomendadoActualizarAlerta.textContent = "";
 }
 
 // Factor externo
@@ -1719,10 +1747,8 @@ if(elementsForm.formularioAgregarEvolucion){
 
 //Si existe el elemento del formulario para actualizar el perfil del administrador
 if(elementsAdminForm.formularioActualizarPerfilAdmin){
-    console.log("hola");
     //Crear el evento del formulario a la hora de enviarlo
     elementsAdminForm.formularioActualizarPerfilAdmin.addEventListener("submit", function(event){
-        console.log("hola2");
 
         //Definir las variables a utilizar con los elementos que componen el formulario
         let nombreCompleto=elementsAdminForm.nombreCompletoActualizarPerfilAdmin.value.trim();
@@ -3169,6 +3195,92 @@ if(elementsAdminForm.formularioActualizarJardinera){
                 return;
             }
         }
+    });
+}
+
+//Si existe el elemento del formulario para actualizar alerta
+if(elementsAdminForm.formularioActualizarAlerta){
+
+    //Crear el evento del formulario a la hora de enviarlo
+    elementsAdminForm.formularioActualizarAlerta.addEventListener("submit", function(event){
+
+        //Definir las variables a utilizar con los elementos que componen el formulario
+        let tipo = elementsAdminForm.tipoActualizarAlerta.value.trim();
+        let descripcion = elementsAdminForm.descripcionActualizarAlerta.value.trim();
+        let recomendacion = elementsAdminForm.recomendacionActualizarAlerta.value.trim();
+        let valorRegistrado = elementsAdminForm.valorRegistradoActualizarAlerta.value.trim();
+        let rangoRecomendado = elementsAdminForm.rangoRecomendadoActualizarAlerta.value.trim();
+
+        //Limpiar los errores de cada elemento
+        limpiarErroresActualizarAlerta();
+
+        //Validar tipo
+        if(tipo !== "0"){
+            if(tipo === "0"){
+                elementsAdminForm.errorTipoActualizarAlerta.textContent = "Debe seleccionar un tipo de alerta";
+                elementsAdminForm.errorTipoActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+        }
+
+        //Validar descripción
+        if(descripcion !== ""){
+            if(descripcion.length < 5){
+                elementsAdminForm.errorDescripcionActualizarAlerta.textContent = "La descripción debe tener al menos 5 caracteres";
+                elementsAdminForm.errorDescripcionActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+
+            if(descripcion.length > 255){
+                elementsAdminForm.errorDescripcionActualizarAlerta.textContent = "La descripción no puede superar los 255 caracteres";
+                elementsAdminForm.errorDescripcionActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+        }
+
+        //Validar recomendación
+        if(recomendacion !== ""){
+
+            if(recomendacion.length < 5){
+                elementsAdminForm.errorRecomendacionActualizarAlerta.textContent = "La recomendación debe tener al menos 5 caracteres";
+                elementsAdminForm.errorRecomendacionActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+
+            if(recomendacion.length > 255){
+                elementsAdminForm.errorRecomendacionActualizarAlerta.textContent = "La recomendación no puede superar los 255 caracteres";
+                elementsAdminForm.errorRecomendacionActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+        }
+
+        //Validar valor registrado
+        if(valorRegistrado !== ""){
+
+            if(valorRegistrado.length > 100){
+                elementsAdminForm.errorValorRegistradoActualizarAlerta.textContent = "El valor registrado no puede superar los 100 caracteres";
+                elementsAdminForm.errorValorRegistradoActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+        }
+
+        //Validar rango recomendado
+        if(rangoRecomendado !== ""){
+
+            if(rangoRecomendado.length > 100){
+                elementsAdminForm.errorRangoRecomendadoActualizarAlerta.textContent = "El rango recomendado no puede superar los 100 caracteres";
+                elementsAdminForm.errorRangoRecomendadoActualizarAlerta.style.marginBottom = "10px";
+                event.preventDefault();
+                return;
+            }
+        }
+
     });
 }
 

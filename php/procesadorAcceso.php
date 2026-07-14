@@ -29,31 +29,47 @@
         if(mysqli_num_rows($resultadoValidarDatos)>0){
             $datosUsuario=arregloDatos($resultadoValidarDatos);
 
-            if(password_verify($contrasena, $datosUsuario["usuContrasena"])){
-                if($datosUsuario["usuTipoUsuario"]==="Administrador" && $datosUsuario["usuEstado"]==="Activo"){ 
-                    registrarActividadUsuario("Administrador","Autenticar","El administrador con id Nº {$numDocumento} ha ingresado al sistema", $numDocumento); ?>
-                    
-                    <!--Redirección al perfil del administrador-->
-                    <script> window.location.replace("../php/homeAdmin.php");</script>
-                    <?php
-                }else{
-                    //Validar el estado de la cuenta del usuario
-                    if($datosUsuario["usuEstado"]==="Activo"){ 
-                        registrarActividadUsuario("Usuario","Autenticar","El usuario con id Nº {$numDocumento} ha ingresado al sistema", $numDocumento); ?>
+            if($datosUsuario["usuIntentosAcceso"]>=5){
+                if($datosUsuario["usuEstado"]==='Activo'){
+                    actualizarEstadoUsuario($numDocumento, "Inactivo");
+                }
+                $_SESSION["alerta"]="inactivacionCuenta";
+            }else{
+                if(password_verify($contrasena, $datosUsuario["usuContrasena"])){
+                    if($datosUsuario["usuTipoUsuario"]==="Administrador" && $datosUsuario["usuEstado"]==="Activo"){ 
+                        $cantidadIntentos=0;
+                        actualizarIntentosAcceso($cantidadIntentos, $numDocumento);
+
+                        registrarActividadUsuario("Administrador","Autenticar","El administrador con id Nº {$numDocumento} ha ingresado al sistema", $numDocumento); ?>
                         
-                        <!--Redirección al perfil del usuario-->
-                        <script> window.location.replace("../php/homeUsuario.php");</script>
+                        <!--Redirección al perfil del administrador-->
+                        <script> window.location.replace("../php/homeAdmin.php");</script>
                         <?php
                     }else{
-                        $_SESSION["alerta"]="cuentaInactiva";
-                    }
-                }  
-            }else{
-                registrarActividadUsuario("Usuario","Autenticar","El usuario con id Nº {$numDocumento} intento acceder al sistema con una contraseña incorrecta", $numDocumento);
-                
-                $_SESSION["alerta"]="credencialesIncorrectas";
-            }
-            $_SESSION["numeroDocumento"]=$numDocumento;        
+                        //Validar el estado de la cuenta del usuario
+                        if($datosUsuario["usuEstado"]==="Activo"){ 
+                            $cantidadIntentos=0;
+                            actualizarIntentosAcceso($cantidadIntentos, $numDocumento);
+                            
+                            registrarActividadUsuario("Usuario","Autenticar","El usuario con id Nº {$numDocumento} ha ingresado al sistema", $numDocumento); ?>
+                            
+                            <!--Redirección al perfil del usuario-->
+                            <script> window.location.replace("../php/homeUsuario.php");</script>
+                            <?php
+                        }else{
+                            $_SESSION["alerta"]="cuentaInactiva";
+                        }
+                    }  
+                }else{
+                    $cantidadIntentos=$datosUsuario["usuIntentosAcceso"]+1;
+                    actualizarIntentosAcceso($cantidadIntentos, $numDocumento);
+
+                    registrarActividadUsuario("Usuario","Autenticar","El usuario con id Nº {$numDocumento} intento acceder al sistema con una contraseña incorrecta", $numDocumento);
+                    
+                    $_SESSION["alerta"]="credencialesIncorrectas";
+                }
+                $_SESSION["numeroDocumento"]=$numDocumento;  
+            }       
         }else{ 
             $_SESSION["alerta"]="credencialesIncorrectas";
         }
@@ -85,6 +101,25 @@
                         mostrarMensaje({
                             title:"¡Su cuenta se encuentra inactiva!",
                             text:"Lo invitamos a comunicarse con un administrador para comenzar su proceso de reactivación",
+                            icon:"error",
+                                                            
+                            //Si el usuario acepta enviar la solicitud
+                            rutaTrue:"../index.php",
+
+                            //Si el usuario no acepta enviar la solicitud
+                            rutaFalse:"../forms/formAcceso.php"
+                        })
+                    </script>
+                    <?php
+                break;
+                
+                case "inactivacionCuenta": ?>
+                    <script>
+                        //Mensaje cuando la cuenta del usuario se bloqueo por intentar acceder con credenciales incorrectas
+                        mostrarMensaje({
+                            title:"¡Cuenta bloqueada!",
+                            text:"Su cuenta ha sido bloqueada temporalmente debido a múltiples intentos fallidos de inicio de sesión",
+                            footer:"Por favor, comuníquese con un administrador para iniciar el proceso de reactivación de su cuenta en BioUrbis.",
                             icon:"error",
                                                             
                             //Si el usuario acepta enviar la solicitud

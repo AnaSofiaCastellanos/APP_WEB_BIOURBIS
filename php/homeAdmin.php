@@ -983,6 +983,85 @@
             }
         //===
 
+        //=== ALERTAS 
+            //Actualizar la alerta
+            if(isset($_POST["actualizarAlertaBtn"])){
+
+                $id = $_POST["updateAlertId"];
+
+                $datosAlerta = consultarDatosAlertaPorId($id);
+
+                $tipo = trim($_POST["updateAlertType"]);
+                $descripcion = ucfirst(strtolower(trim($_POST["updateAlertDescription"])));
+                $recomendacion = ucfirst(strtolower(trim($_POST["updateAlertRecommendation"])));
+                $valorRegistrado = trim($_POST["updateAlertRecordedValue"]);
+                $rangoRecomendado = trim($_POST["updateAlertRecomendedRange"]);
+
+                $_SESSION["nuevoTipoAlerta"] = ($tipo != "0") ? $tipo : $datosAlerta["alerTipo"];
+
+                $_SESSION["nuevaDescripcionAlerta"] = ($descripcion != "") ? $descripcion : $datosAlerta["alerDescripcion"];
+
+                $_SESSION["nuevaRecomendacionAlerta"] = ($recomendacion != "") ? $recomendacion : $datosAlerta["alerRecomendacion"];
+
+                $_SESSION["nuevoValorRegistradoAlerta"] = ($valorRegistrado != "") ? $valorRegistrado : $datosAlerta["alerValorRegistrado"];
+
+                $_SESSION["nuevoRangoRecomendadoAlerta"] = ($rangoRecomendado != "") ? $rangoRecomendado : $datosAlerta["alerRangoRecomendado"];
+
+                $nuevoTipo = $_SESSION["nuevoTipoAlerta"];
+                $nuevaDescripcion = $_SESSION["nuevaDescripcionAlerta"];
+                $nuevaRecomendacion = $_SESSION["nuevaRecomendacionAlerta"];
+                $nuevoValorRegistrado = $_SESSION["nuevoValorRegistradoAlerta"];
+                $nuevoRangoRecomendado = $_SESSION["nuevoRangoRecomendadoAlerta"];
+
+                if(actualizarAlerta(
+                    $id,
+                    $nuevoTipo,
+                    $nuevaDescripcion,
+                    $nuevaRecomendacion,
+                    $nuevoValorRegistrado,
+                    $nuevoRangoRecomendado
+                )){
+
+                    registrarActividadUsuario(
+                        "Alerta",
+                        "Actualizar",
+                        "Actualizó la alerta N° {$id}",
+                        $usuarioActivo
+                    );
+
+                    $_SESSION["alerta"] = "alertaActualizada";
+
+                }else{
+                    $_SESSION["alerta"] = "errorDeActualizacion";
+                }
+            }
+
+            //Actualizar el estado de la alerta
+            if(isset($_POST["inactivarAlertaBtn"])){
+
+                $id = $_POST["inactivateAlertId"];
+
+                $datosAlerta = consultarDatosAlertaPorId($id);
+
+                $estado = ($datosAlerta["alerEstado"] === "Activa") ? "Inactiva" : "Activa";
+
+                if(actualizarEstadoAlertaAdmin($id, $estado)){
+
+                    registrarActividadUsuario(
+                        "Alerta",
+                        "Activar/Inactivar",
+                        "Modificó el estado de la alerta N° {$id}",
+                        $usuarioActivo
+                    );
+
+                    $_SESSION["alerta"] = "estadoAlertaActualizado";
+
+                }else{
+                    $_SESSION["alerta"] = "errorDeActualizacionEstado";
+                }
+            }
+        //===
+
         //=== FACTOR EXTERNO
             //Actualizar el factor externo 
             if(isset($_POST["actualizarFactorExternoBtn"])){
@@ -1357,7 +1436,10 @@
                     <li onclick="showModule('users', this)">
                         <i class="fas fa-users"></i><span class="menu-text">Usuarios</span>
                     </li>
-                    <!--Editar Tipos de documento-->
+
+                    <li onclick="showModule('type-documents', this)">
+                        <i class="fas fa-address-card"></i><span class="menu-text">Tipos de Documento</span>
+                    </li>
 
                     <li onclick="showModule('requests', this)">
                         <i class="fas fa-file-alt"></i><span class="menu-text">Solicitudes</span>
@@ -1370,12 +1452,22 @@
                     <li onclick="showModule('seeds', this)">
                         <i class="fas fa-seedling"></i><span class="menu-text">Semillas</span>
                     </li>
-                    <!--Editar Tipo  de Semilla-->
+
+                    <li onclick="showModule('type-seeds', this)">
+                        <i class="fas fa-spa"></i><span class="menu-text">Tipos de Semilla</span>
+                    </li> 
 
                     <li onclick="showModule('technical-sheet', this)">
                         <i class="fas fa-clipboard-list"></i><span class="menu-text">Ficha Técnica</span>
                     </li>
-                    <!--Editar Tipo Tierra y Tipo Clima-->
+
+                    <li onclick="showModule('type-weathers', this)">
+                        <i class="fas fa-cloud-sun"></i><span class="menu-text">Tipos de Clima</span>
+                    </li>
+
+                    <li onclick="showModule('type-soils', this)">
+                        <i class="fas fa-leaf"></i><span class="menu-text">Tipos de Tierra</span>
+                    </li>
 
                     <li onclick="showModule('growth-stages', this)">
                         <i class="fas fa-chart-line"></i><span class="menu-text">Etapas Crecimiento</span>
@@ -1400,7 +1492,6 @@
                     <li onclick="showModule('stages', this)">
                         <i class="fas fa-layer-group"></i><span class="menu-text">Fases</span>
                     </li>
-                    <!--Editar Preguntas segun la fase-->  
                 </ul>
             </nav>
 
@@ -1414,11 +1505,6 @@
 
             <!-- HEADER -->
             <header class="topbar">
-
-                <div class="top-icons">
-                    <i class="fas fa-bell"></i>
-                    <i class="fas fa-envelope"></i>
-                </div>
             </header>
 
             <!-- DASHBOARD -->
@@ -1538,9 +1624,6 @@
                 <div class="profile-card">
                     <div class="module-header">
                         <h2>Usuarios</h2>
-                        <div class="action-buttons">
-                            <button class="action-button typeDocumentBtn" id="typeDocumentBtn"><i class="fas fa-sync-alt"></i>Tipos de Documento</button>
-                        </div>
                     </div>
                     <?php
                         $resultadoConsultarTodosUsuarios= consultarTodosUsuarios();
@@ -1604,6 +1687,59 @@
                             </div>
                         <?php }
                     ?>
+                </div>
+            </section>
+
+            <!-- TYPE DOCUMENTS -->
+            <section id="type-documents" class="module">
+                <div class="profile-card">
+                    <div class="module-header">
+                        <h2>Tipos de Documento</h2>
+                        <div class="action-buttons">
+                            <button class="action-button addTypeDocumentBtn" id="addTypeDocumentBtn"><i class="fas fa-plus"></i> Agregar Tipo de Documento</button>
+                        </div>
+                    </div>
+                    <?php
+                        $resultadoConsultarTiposDocumento=consultarTiposDocumentos();
+                        if(mysqli_num_rows($resultadoConsultarTiposDocumento)>0){ ?>
+                            <table>
+                                <tr>
+                                    <th>Identificador</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                <?php
+                                while($datosTipoDocumento=mysqli_fetch_assoc($resultadoConsultarTiposDocumento)){  ?>
+                                    <tr>
+                                        <td><?php echo $datosTipoDocumento["idTipoDocumento"]?></td>
+                                        <td><?php echo $datosTipoDocumento["tipoDocDescripcion"]?></td>
+                                        <td><?php echo $datosTipoDocumento["tipoDocEstado"]?></td>
+                                        <td class="acciones">
+                                            <button class="table-button updateTypeDocumentBtn" id="updateTypeDocumentBtn" data-id="<?php echo $datosTipoDocumento["idTipoDocumento"]?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="table-button inactivateTypeDocumentBtn" id="inactivateTypeDocumentBtn" data-id="<?php echo $datosTipoDocumento["idTipoDocumento"]?>">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php 
+                                } 
+                                ?>
+                            </table>
+                            <?php
+                        }else{
+                            ?>
+                            <div class="empty-state full-width">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h3>No hay tipos de documento disponibles</h3>
+                                <p>No existen tipos de documento registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
+                            </div>
+                        <?php } 
+                    ?> 
                 </div>
             </section>
 
@@ -1819,6 +1955,59 @@
                 </div>
             </section>
 
+            <!-- TYPE SEEDS -->
+            <section id="type-seeds" class="module">
+                <div class="profile-card">
+                    <div class="module-header">
+                        <h2>Tipos de Semilla</h2>
+                        <div class="action-buttons">
+                            <button class="action-button addTypeSeedBtn" id="addTypeSeedBtn"><i class="fas fa-plus"></i> Agregar Tipo de Semilla</button>
+                        </div>
+                    </div>
+                    <?php
+                        $resultadoConsultarTiposSemilla=consultarTodosTipoSemilla();
+                        if(mysqli_num_rows($resultadoConsultarTiposSemilla)>0){ ?>
+                            <table>
+                                <tr>
+                                    <th>Identificador</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr> 
+                                <?php
+                                while($datosTipoSemilla=mysqli_fetch_assoc($resultadoConsultarTiposSemilla)){  ?>
+                                    <tr>
+                                        <td><?php echo $datosTipoSemilla["idTipoSemilla"]?></td>
+                                        <td><?php echo $datosTipoSemilla["tipoSemDescripcion"]?></td>
+                                        <td><?php echo $datosTipoSemilla["tipoSemEstado"]?></td>
+                                        <td class="acciones">
+                                            <button class="table-button updateTypeSeedBtn" id="updateTypeSeedBtn" data-id="<?php echo $datosTipoSemilla["idTipoSemilla"]?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="table-button inactivateTypeSeedBtn" id="inactivateTypeSeedBtn" data-id="<?php echo $datosTipoSemilla["idTipoSemilla"]?>">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php 
+                                } 
+                                ?>
+                            </table>
+                            <?php
+                        }else{
+                            ?>
+                            <div class="empty-state full-width">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h3>No hay tipos de semillas disponibles</h3>
+                                <p>No existen tipos de semillas registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
+                            </div>
+                        <?php }
+                    ?>
+                </div>
+            </section>
+
             <!-- TECHNICAL-SHEET -->
             <section id="technical-sheet" class="module">
                 <div class="profile-card">
@@ -1826,8 +2015,6 @@
                         <h2>Ficha Técnica</h2>
                         <div class="action-buttons">
                             <button class="action-button addTechnicalSheetBtn" id="addTechnicalSheetBtn"><i class="fas fa-plus"></i> Agregar Ficha Técnica</button>
-                            <button class="action-button typeWeatherBtn" id="typeWeatherBtn"><i class="fas fa-cloud-sun"></i> Tipos de  Clima</button>
-                            <button class="action-button typeSoilBtn" id="typeSoilBtn"><i class="fas fa-leaf"></i> Tipos de Tierra</button>
                         </div>
                     </div>
                         <?php
@@ -1886,6 +2073,113 @@
                                 </div>
                             <?php }  
                         ?>
+                </div>
+            </section>
+
+            <!-- TYPE WEATHERS -->
+            <section id="type-weathers" class="module">
+                <div class="profile-card">
+                    <div class="module-header">
+                        <h2>Tipos de Clima</h2>
+                        <div class="action-buttons">
+                            <button class="action-button addTypeWeatherBtn" id="addTypeWeatherBtn"><i class="fas fa-plus"></i> Agregar Tipo de Clima</button>
+                        </div>
+                    </div>
+                    <?php
+                        $resultadoConsultarTiposClima=consultarTiposClima();
+                        if(mysqli_num_rows($resultadoConsultarTiposClima)>0){ ?>
+                            <table>
+                                <tr>
+                                    <th>Identificador</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                <?php
+                                while($datosTipoClima=mysqli_fetch_assoc($resultadoConsultarTiposClima)){  ?>
+                                    <tr>
+                                        <td><?php echo $datosTipoClima["idTipoClima"]?></td>
+                                        <td><?php echo $datosTipoClima["tipoClimaDescripcion"]?></td>
+                                        <td><?php echo $datosTipoClima["tipoClimaEstado"]?></td>
+                                        <td class="acciones">
+                                            <button class="table-button updateTypeWeatherBtn" id="updateTypeWeatherBtn" data-id="<?php echo $datosTipoClima["idTipoClima"]?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="table-button inactivateTypeWeatherBtn" id="inactivateTypeWeatherBtn" data-id="<?php echo $datosTipoClima["idTipoClima"]?>">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php 
+                                } 
+                                ?>
+                            </table>
+                            <?php
+                        }else{
+                            ?>
+                            <div class="empty-state full-width">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h3>No hay tipos de clima disponibles</h3>
+                                <p>No existen tipos de clima registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
+                            </div>
+                        <?php 
+                        }
+                    ?> 
+                </div>
+            </section>
+
+            <!-- TYPE SOILS -->
+            <section id="type-soils" class="module">
+                <div class="profile-card">
+                    <div class="module-header">
+                        <h2>Tipos de Tierra</h2>
+                        <div class="action-buttons">
+                            <button class="action-button addTypeSoilBtn" id="addTypeSoilBtn"><i class="fas fa-plus"></i> Agregar Tipo de Tierra</button>
+                        </div>
+                    </div>
+                    <?php
+                        $resultadoConsultarTiposTierra=consultarTiposTierra();
+                        if(mysqli_num_rows($resultadoConsultarTiposTierra)>0){ ?>
+                            <table>
+                                <tr>
+                                    <th>Identificador</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                <?php
+                                while($datosTipoTierra=mysqli_fetch_assoc($resultadoConsultarTiposTierra)){  ?>
+                                    <tr>
+                                        <td><?php echo $datosTipoTierra["idTipoTierra"]?></td>
+                                        <td><?php echo $datosTipoTierra["tipoTierraDescripcion"]?></td>
+                                        <td><?php echo $datosTipoTierra["tipoTierraEstado"]?></td>
+                                        <td class="acciones">
+                                            <button class="table-button updateTypeSoilBtn" id="updateTypeSoilBtn" data-id="<?php echo $datosTipoTierra["idTipoTierra"]?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="table-button inactivateTypeSoilBtn" id="inactivateTypeSoilBtn" data-id="<?php echo $datosTipoTierra["idTipoTierra"]?>">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php 
+                                } 
+                                ?>
+                            </table>
+                            <?php
+                        }else{
+                            ?>
+                            <div class="empty-state full-width">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h3>No hay tipos de tierra disponibles</h3>
+                                <p>No existen tipos de tierra registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
+                            </div>
+                        <?php }
+                    ?>
                 </div>
             </section>
 
@@ -2018,11 +2312,12 @@
                     <?php
                         $resultadoConsultarTodosFactoresExternos = consultarTodasFactoresExternos();
                         if(mysqli_num_rows($resultadoConsultarTodosFactoresExternos)>0){
+                            $cantidadFactores=1;
                             while ($datosFactorExterno = mysqli_fetch_assoc($resultadoConsultarTodosFactoresExternos)) {  ?>
                                 <article class="external-factor-card">
                                     <div class="external-factor-header">
                                         <div>
-                                            <h3>Factor #<?php echo $datosFactorExterno["idFactoresExternos"] ?></h3>
+                                            <h3>Factor Nº<?php echo $cantidadFactores; ?></h3>
                                             <span class="external-factor-label">Jardinera:
                                                 <?php echo $datosFactorExterno["jarNombre"] ?></span>
                                         </div>
@@ -2053,6 +2348,7 @@
                                     </div>
                                 </article>
                                 <?php
+                                $cantidadFactores++;
                             }
                         }else{
                             ?>
@@ -2078,6 +2374,7 @@
                     <?php
                         $resultadoConsultarTodosSeguimientos = consultarTodasSeguimientos();
                         if(mysqli_num_rows($resultadoConsultarTodosSeguimientos)>0){
+                            $cantidadSeguimientos=1;
                             while ($datosSeguimiento = mysqli_fetch_assoc($resultadoConsultarTodosSeguimientos)) {
                                 $nota = ($datosSeguimiento["segJardineraNota"] !== "") ? $datosSeguimiento["segJardineraNota"] : "Sin nota";
                                 
@@ -2085,7 +2382,7 @@
                                 <article class="monitoring-card">
                                     <div class="monitoring-card-top">
                                         <div class="monitoring-header-text">
-                                            <h3>Seguimiento #<?php echo $datosSeguimiento["idSeguimiento"] ?></h3>
+                                            <h3>Seguimiento Nº<?php echo $cantidadSeguimientos?></h3>
                                             <span
                                                 class="monitoring-label"> Fecha: <?php echo $datosSeguimiento["segJardineraFecha"] ?></span>
                                         </div>
@@ -2122,6 +2419,7 @@
                                     </div>
                                 </article>
                             <?php
+                            $cantidadSeguimientos++;
                             }
                         }else{
                             ?>
@@ -2139,71 +2437,82 @@
             </section>
 
             <!-- ALERTS -->
-            <section id="monitoring" class="module">
+            <section id="alerts" class="module">
                 <div class="profile-card">
-                    <h2>Alertas</h2>
-
-                    <div class="monitoring-grid">
+                    <div class="module-header">
+                        <h2>Alertas</h2>
+                    </div>
                     <?php
-                        $resultadoConsultarTodosSeguimientos = consultarTodasSeguimientos();
-                        if(mysqli_num_rows($resultadoConsultarTodosSeguimientos)>0){
-                            while ($datosSeguimiento = mysqli_fetch_assoc($resultadoConsultarTodosSeguimientos)) {
-                                $nota = ($datosSeguimiento["segJardineraNota"] !== "") ? $datosSeguimiento["segJardineraNota"] : "Sin nota";
-                                
-                                $imagen = ($datosSeguimiento["segJardineraImagen"] !== "") ? $datosSeguimiento["segJardineraImagen"] : null; ?>
-                                <article class="monitoring-card">
-                                    <div class="monitoring-card-top">
-                                        <div class="monitoring-header-text">
-                                            <h3>Seguimiento #<?php echo $datosSeguimiento["idSeguimiento"] ?></h3>
-                                            <span
-                                                class="monitoring-label"> Fecha: <?php echo $datosSeguimiento["segJardineraFecha"] ?></span>
-                                        </div>
-                                        <div class="monitoring-avatar-group">
-                                            <?php if ($imagen) { ?>
-                                            <div class="monitoring-avatar">
-                                                <img src="<?php echo $imagen ?>" alt="Imagen de seguimiento" />
-                                            </div>
-                                            <?php } ?>
-                                            <span
-                                                class="monitoring-status <?php echo strtolower($datosSeguimiento["segJardineraEstado"]) ?>">
-                                                <?php echo $datosSeguimiento["segJardineraEstado"] ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="monitoring-card-body">
-                                        <p class="monitoring-note">Nota: <?php echo $nota ?></p>
-                                        <ul class="monitoring-meta-list">
-                                            <li><span>Jardinera</span><strong><?php echo $datosSeguimiento["jarNombre"] ?></strong>
-                                            </li>
-                                            <li><span>Porcentaje</span><strong><?php echo $datosSeguimiento["segJardineraPorcentaje"], "%" ?></strong>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="monitoring-actions">
-                                        <button class="table-button updateMonitoringBtn" id="updateMonitoringBtn"
-                                            data-id="<?php echo $datosSeguimiento["idSeguimiento"] ?>">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="table-button inactivateMonitoringBtn" id="inactivateMonitoringBtn"
-                                            data-id="<?php echo $datosSeguimiento["idSeguimiento"] ?>">
-                                            <i class="fas fa-ban"></i>
-                                        </button>
-                                    </div>
-                                </article>
+                        //Arreglo con los tipos de alertas de fecha permitidos
+                        $alertasFechas=[ "proximoDesarrolloVegetativo", "enGerminacion", "terminandoGerminacion", "proximoFloracion",
+                            "enDesarrolloVegetativo", "terminandoDesarrolloVegetativo", "proximoLlenadoGranos", "enFloracion", "terminandoFloracion",
+                            "proximoCosecha", "enLlenadoGranos", "terminandoLlenadoGranos", "proximoCulminarCiclo", "enCosecha", "terminandoCosecha"];
+                        
+                            $resultadoConsultarTodasAlertas=consultarTodasAlertas();
+                        if(mysqli_num_rows($resultadoConsultarTodasAlertas)>0){ ?>
+                            <table>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Recomendación</th>
+                                    <th>Valor Registrado</th>
+                                    <th>Rango Recomendado</th>
+                                    <th>Estado</th>
+                                    <th>Jardinera</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                <?php
+                                while($datosAlerta=mysqli_fetch_assoc($resultadoConsultarTodasAlertas)){  ?>
+                                    <tr>
+                                        <td><?php echo $datosAlerta["alerFecha"]?></td>
+                                        <td><?php 
+                                            echo formatearTexto($datosAlerta["alerTipo"]);
+                                        ?></td>
+                                        <td><?php echo $datosAlerta["alerDescripcion"] ?></td>
+                                        <td><?php echo $datosAlerta["alerRecomendacion"]?></td>
+                                        <td><?php 
+                                            if(in_array($datosAlerta["alerTipo"], $alertasFechas) && $datosAlerta["alerValorRegistrado"]==0){
+                                                echo "No aplica";
+                                            }else{
+                                                echo $datosAlerta["alerValorRegistrado"];
+                                            }
+                                        ?></td>
+
+                                        <td><?php 
+                                            if(in_array($datosAlerta["alerTipo"], $alertasFechas) && $datosAlerta["alerRangoRecomendado"]==null){
+                                                echo "No aplica";
+                                            }else{
+                                                echo $datosAlerta["alerRangoRecomendado"];
+                                            }
+                                        ?></td>
+                                        <td><?php echo $datosAlerta["alerEstado"]?></td>
+                                        <td><?php echo $datosAlerta["jarNombre"]?></td>
+                                        <td class="acciones">
+                                            <button class="table-button updateAlertBtn" id="updateAlertBtn" data-id="<?php echo $datosAlerta["idAlerta"]?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="table-button inactivateAlertBtn" id="inactivateAlertBtn" data-id="<?php echo $datosAlerta["idAlerta"]?>">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                } 
+                                ?>
+                            </table>
                             <?php
-                            }
                         }else{
                             ?>
                             <div class="empty-state full-width">
                                 <div class="empty-state-icon">
                                     <i class="fas fa-folder-open"></i>
                                 </div>
-                                <h3>No hay seguimientos de jardineras disponibles</h3>
-                                <p>No existen registros de seguimientos de jardineras en el sistema. Cuando un usuario registre alguno aparecerá aquí automáticamente.</p>
+                                <h3>No hay alertas disponibles</h3>
+                                <p>No se han generado alertas en el sistema. Cuando se detecte alguna novedad de las jardineras, aparecerá aquí automáticamente.</p>
                             </div>
-                        <?php }                       
-                    ?>
-                    </div>
+                        <?php }    
+                    ?> 
                 </div>
             </section>
 
@@ -2440,66 +2749,6 @@
                 </div>
             </form>
         </div>
-    </div>
-
-   <!--Type Document-->
-    <div class="modal" id="typeDocumentModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Actualizar Tipo de Documento</h3>
-                <div class="action-buttons">
-                    <button class="action-button addTypeDocumentBtn" id="addTypeDocumentBtn"><i class="fas fa-plus"></i> Agregar Tipo de Documento</button>
-                </div>
-                <button class="modal-close" id="closeTypeDocument">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-                <?php
-                    $resultadoConsultarTiposDocumento=consultarTiposDocumentos();
-                    if(mysqli_num_rows($resultadoConsultarTiposDocumento)>0){ ?>
-                        <table>
-                            <tr>
-                                <th>Identificador</th>
-                                <th>Descripción</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                            <?php
-                            while($datosTipoDocumento=mysqli_fetch_assoc($resultadoConsultarTiposDocumento)){  ?>
-                                <tr>
-                                    <td><?php echo $datosTipoDocumento["idTipoDocumento"]?></td>
-                                    <td><?php echo $datosTipoDocumento["tipoDocDescripcion"]?></td>
-                                    <td><?php echo $datosTipoDocumento["tipoDocEstado"]?></td>
-                                    <td class="acciones">
-                                        <button class="table-button updateTypeDocumentBtn" id="updateTypeDocumentBtn" data-id="<?php echo $datosTipoDocumento["idTipoDocumento"]?>">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="table-button inactivateTypeDocumentBtn" id="inactivateTypeDocumentBtn" data-id="<?php echo $datosTipoDocumento["idTipoDocumento"]?>">
-                                            <i class="fas fa-ban"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php 
-                            } 
-                            ?>
-                        </table>
-                        <?php
-                    }else{
-                        ?>
-                        <div class="empty-state full-width">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-folder-open"></i>
-                            </div>
-                            <h3>No hay tipos de documento disponibles</h3>
-                            <p>No existen tipos de documento registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
-                        </div>
-                    <?php } 
-                ?>  
-            </table>
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" id="cancelTypeDocument">Cancelar</button>
-            </div>
-        </div>
     </div> 
 
     <!--Add Type Document-->
@@ -2716,66 +2965,6 @@
                     <button type="submit" class="btn-primary" name="inactivarSemillaBtn" id="inactivarSemillaBtn">Aceptar</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!--Type Seed-->
-    <div class="modal" id="typeSeedModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Tipos de Semillas</h3>
-                <div class="action-buttons">
-                    <button class="action-button addTypeSeedBtn" id="addTypeSeedBtn"><i class="fas fa-plus"></i> Agregar Tipo de Semilla</button>
-                </div>
-                <button class="modal-close" id="closeTypeSeed">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <?php
-                $resultadoConsultarTiposSemilla=consultarTodosTipoSemilla();
-                if(mysqli_num_rows($resultadoConsultarTiposSemilla)>0){ ?>
-                    <table>
-                        <tr>
-                            <th>Identificador</th>
-                            <th>Descripción</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr> 
-                        <?php
-                        while($datosTipoSemilla=mysqli_fetch_assoc($resultadoConsultarTiposSemilla)){  ?>
-                            <tr>
-                                <td><?php echo $datosTipoSemilla["idTipoSemilla"]?></td>
-                                <td><?php echo $datosTipoSemilla["tipoSemDescripcion"]?></td>
-                                <td><?php echo $datosTipoSemilla["tipoSemEstado"]?></td>
-                                <td class="acciones">
-                                    <button class="table-button updateTypeSeedBtn" id="updateTypeSeedBtn" data-id="<?php echo $datosTipoSemilla["idTipoSemilla"]?>">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="table-button inactivateTypeSeedBtn" id="inactivateTypeSeedBtn" data-id="<?php echo $datosTipoSemilla["idTipoSemilla"]?>">
-                                        <i class="fas fa-ban"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <?php 
-                        } 
-                        ?>
-                    </table>
-                    <?php
-                }else{
-                    ?>
-                    <div class="empty-state full-width">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-folder-open"></i>
-                        </div>
-                        <h3>No hay tipos de semillas disponibles</h3>
-                        <p>No existen tipos de semillas registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
-                    </div>
-                <?php }
-            ?> 
-            </table>
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" id="cancelTypeSeed">Cancelar</button>
-            </div>
         </div>
     </div> 
 
@@ -3078,67 +3267,6 @@
                 </div>
             </form>
         </div>
-    </div>
-
-    <!--Type Weather-->
-    <div class="modal" id="typeWeatherModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Tipos de Climas</h3>
-                <div class="action-buttons">
-                    <button class="action-button addTypeWeatherBtn" id="addTypeWeatherBtn"><i class="fas fa-plus"></i> Agregar Tipo de Clima</button>
-                </div>
-                <button class="modal-close" id="closeTypeWeather">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <?php
-                $resultadoConsultarTiposClima=consultarTiposClima();
-                if(mysqli_num_rows($resultadoConsultarTiposClima)>0){ ?>
-                    <table>
-                        <tr>
-                            <th>Identificador</th>
-                            <th>Descripción</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                        <?php
-                        while($datosTipoClima=mysqli_fetch_assoc($resultadoConsultarTiposClima)){  ?>
-                            <tr>
-                                <td><?php echo $datosTipoClima["idTipoClima"]?></td>
-                                <td><?php echo $datosTipoClima["tipoClimaDescripcion"]?></td>
-                                <td><?php echo $datosTipoClima["tipoClimaEstado"]?></td>
-                                <td class="acciones">
-                                    <button class="table-button updateTypeWeatherBtn" id="updateTypeWeatherBtn" data-id="<?php echo $datosTipoClima["idTipoClima"]?>">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="table-button inactivateTypeWeatherBtn" id="inactivateTypeWeatherBtn" data-id="<?php echo $datosTipoClima["idTipoClima"]?>">
-                                        <i class="fas fa-ban"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <?php 
-                        } 
-                        ?>
-                    </table>
-                    <?php
-                }else{
-                    ?>
-                    <div class="empty-state full-width">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-folder-open"></i>
-                        </div>
-                        <h3>No hay tipos de clima disponibles</h3>
-                        <p>No existen tipos de clima registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
-                    </div>
-                <?php 
-                }
-            ?> 
-            </table>
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" id="cancelTypeWeather">Cancelar</button>
-            </div>
-        </div>
     </div> 
 
     <!--Add Type Weather-->
@@ -3210,65 +3338,6 @@
                     <button type="submit" class="btn-primary" name="inactivarTipoClimaBtn" id="inactivarTipoClimaBtn">Aceptar</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!--Type Soil-->
-    <div class="modal" id="typeSoilModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Tipos de Tierra</h3>
-                <div class="action-buttons">
-                    <button class="action-button addTypeSoilBtn" id="addTypeSoilBtn"><i class="fas fa-plus"></i> Agregar Tipo de Tierra</button>
-                </div>
-                <button class="modal-close" id="closeTypeSoil">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <?php
-                $resultadoConsultarTiposTierra=consultarTiposTierra();
-                if(mysqli_num_rows($resultadoConsultarTiposTierra)>0){ ?>
-                    <table>
-                        <tr>
-                            <th>Identificador</th>
-                            <th>Descripción</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                        <?php
-                        while($datosTipoTierra=mysqli_fetch_assoc($resultadoConsultarTiposTierra)){  ?>
-                            <tr>
-                                <td><?php echo $datosTipoTierra["idTipoTierra"]?></td>
-                                <td><?php echo $datosTipoTierra["tipoTierraDescripcion"]?></td>
-                                <td><?php echo $datosTipoTierra["tipoTierraEstado"]?></td>
-                                <td class="acciones">
-                                    <button class="table-button updateTypeSoilBtn" id="updateTypeSoilBtn" data-id="<?php echo $datosTipoTierra["idTipoTierra"]?>">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="table-button inactivateTypeSoilBtn" id="inactivateTypeSoilBtn" data-id="<?php echo $datosTipoTierra["idTipoTierra"]?>">
-                                        <i class="fas fa-ban"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <?php 
-                        } 
-                        ?>
-                    </table>
-                    <?php
-                }else{
-                    ?>
-                    <div class="empty-state full-width">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-folder-open"></i>
-                        </div>
-                        <h3>No hay tipos de tierra disponibles</h3>
-                        <p>No existen tipos de tierra registrados en el sistema. Puede registrar un nuevo tipo para comenzar.</p>
-                    </div>
-                <?php }
-            ?>  
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" id="cancelTypeSoil">Cancelar</button>
-            </div>
         </div>
     </div> 
 
@@ -3785,7 +3854,7 @@
 
                 <div class="form-group">
                     <label for="updateStageDescription">Descripción</label>
-                    <input type="text" id="updateStageDescription" name="updateStageDescription" placeholder="Ej: Fase donde el cultivo crece">>
+                    <input type="text" id="updateStageDescription" name="updateStageDescription" placeholder="Ej: Fase donde el cultivo crece">
                 </div>
                 <p id="errorDescripcionActualizarFase" class="error-message"></p>
 
@@ -3926,6 +3995,91 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" id="cancelInactivateStageQuestions">Cancelar</button>
                     <button type="submit" class="btn-primary" name="inactivarPreguntaFaseBtn" id="inactivarPreguntaFaseBtn">Aceptar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--Update Alerts-->
+    <?php
+        $tiposAlerta=[ "bajaHumedad","altaHumedad", "bajaTemperatura", "altaTemperatura",  "bajaCantidadAgua","altaCantidadAgua", "climaInadecuado", 
+        "proximoDesarrolloVegetativo","enGerminacion","terminandoGerminacion", "proximoFloracion","enDesarrolloVegetativo","terminandoDesarrolloVegetativo",
+        "proximoLlenadoGranos","enFloracion","terminandoFloracion", "proximoCosecha", "enLlenadoGranos",  "terminandoLlenadoGranos", "proximoCulminarCiclo",
+        "enCosecha", "terminandoCosecha" ];
+    ?>
+    <div class="modal" id="updateAlertModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Actualizar Alerta</h3>
+                <button class="modal-close" id="closeUpdateAlert">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="updateAlertForm" action="homeAdmin.php" method="POST" autocomplete="on">
+                <input type="hidden" id="updateAlertId" name="updateAlertId">
+                <div class="form-group">
+                    <label for="updateAlertType">Tipo</label>
+                    <select id="updateAlertType" name="updateAlertType"  class="select">
+                        <option name="opcion" value ="0">Seleccionar opción</option>
+                        <?php 
+                            foreach($tiposAlerta as $tipo){  ?>
+                                <option value='<?php $tipo ?>'><?php echo formatearTexto($tipo)?></option>
+                                <?php
+                            }                        
+                        ?>       
+                    </select>
+                </div>
+                <p id="errorTipoActualizarAlerta" class="error-message"></p>
+
+                <div class="form-group">
+                    <label for="updateAlertDescription">Descripción</label>
+                    <input type="text" id="updateAlertDescription" name="updateAlertDescription" placeholder="Ej: Las condiciones no son las más adecuadas">
+                </div>
+                <p id="errorDescripcionActualizarAlerta" class="error-message"></p>
+
+                <div class="form-group">
+                    <label for="updateAlertRecommendation">Recomendación</label>
+                    <input type="text" id="updateAlertRecommendation" name="updateAlertRecommendation" placeholder="Ej: Mover la planta a un lugar mejor ">
+                </div>
+                <p id="errorRecomendacionActualizarAlerta" class="error-message"></p>
+
+                <div class="form-group">
+                    <label for="updateAlertRecordedValue">Valor Registrado</label>
+                    <input type="text" id="updateAlertRecordedValue" name="updateAlertRecordedValue" placeholder="Ej: 20 ">
+                </div>
+                <p id="errorValorRegistradoActualizarAlerta" class="error-message"></p>
+
+                <div class="form-group">
+                    <label for="updateAlertRecomendedRange">Rango Recomendado</label>
+                    <input type="text" id="updateAlertRecomendedRange" name="updateAlertRecomendedRange" placeholder="Ej: 50-100">
+                </div>
+                <p id="errorRangoRecomendadoActualizarAlerta" class="error-message"></p>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelUpdateAlert">Cancelar</button>
+                    <button type="submit" class="btn-primary" name="actualizarAlertaBtn" id="actualizarAlertaBtn">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--Inactivate Alerts-->
+    <div class="modal" id="inactivateAlertModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>¿Está seguro de modificar el estado de la alerta?</h3>
+                <button class="modal-close" id="closeInactivateAlert">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="inactivateAlertForm" action="homeAdmin.php" method="POST">
+                <input type="hidden" id="inactivateAlertId" name="inactivateAlertId">
+            
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelInactivateAlert">Cancelar</button>
+                    <button type="submit" class="btn-primary" name="inactivarAlertaBtn" id="inactivarAlertaBtn">Aceptar</button>
                 </div>
             </form>
         </div>
@@ -4325,6 +4479,38 @@
                         mostrarMensaje({
                             title: "¡Estado de la jardinera modificado!",
                             text: "El estado de la jardinera fue modificado correctamente",
+                            icon: "success",
+                            iconColor:"#0d6b52",
+
+                            rutaTrue: "homeAdmin.php",
+                            rutaFalse: "homeAdmin.php"
+                        })
+                    </script>
+                <?php
+                break;
+
+                case "alertaActualizada": ?>
+                    <script>
+                        //Muestra un mensaje de confirmación cuando la alerta se actualizo correctamente en el sistema
+                        mostrarMensaje({
+                            title: "¡Actualización exitosa!",
+                            text: "La alerta fue actualizada correctamente en el sistema",
+                            icon: "success",
+                            iconColor:"#0d6b52",
+
+                            rutaTrue: "homeAdmin.php",
+                            rutaFalse: "homeAdmin.php"
+                        })
+                    </script>
+                <?php
+                break;
+
+                case "estadoAlertaActualizado": ?>
+                    <script>
+                        //Muestra un mensaje cuando el estado de la alerta ha sido modificado correctamente en el sistema
+                        mostrarMensaje({
+                            title: "¡Estado de la alerta modificado!",
+                            text: "El estado de la alerta fue modificado correctamente",
                             icon: "success",
                             iconColor:"#0d6b52",
 

@@ -63,6 +63,11 @@ const elements = {
   closeAddGardenEvolution: document.getElementById("closeAddGardenEvolution"),
   cancelAddGardenEvolution: document.getElementById("cancelAddGardenEvolution"),
 
+  generateNewExternalFactorsBtn:document.getElementById("generateNewExternalFactorsBtn"),
+  generateExternalFactorsModal:document.getElementById("generateExternalFactorsModal"),
+  closeGenerateExternalFactors:document.getElementById("closeGenerateExternalFactors"),
+  generateExternalFactorsForm:document.getElementById("generateExternalFactorsForm"),
+  cancelGenerateExternalFactors:document.getElementById("cancelGenerateExternalFactor")
 }
 
 // ================== INICIO ==================
@@ -228,12 +233,21 @@ function initializeEventListeners() {
       return;
     }
 
-    // ===== FACTORES EXTERNOS =====
-    const externalBtn = e.target.closest(".addNewExternalFactorsBtn");
+      // ===== FACTORES EXTERNOS =====
+      const externalBtn = e.target.closest(".addNewExternalFactorsBtn");
       if (externalBtn) {
         const id = externalBtn.dataset.id;
         document.getElementById("gardenSelectedId").value = id;
         elements.addExternalFactorsModal?.classList.add("active");
+        return;
+      }
+
+      // ===== GENERAR FACTORES EXTERNOS =====
+      const generateExternalBtn = e.target.closest(".generateNewExternalFactorsBtn");
+      if (generateExternalBtn) {
+        const id = generateExternalBtn.dataset.id;
+        document.getElementById("gardenIdGenerateExternalFactor").value = id;
+        elements.generateExternalFactorsModal?.classList.add("active");
         return;
       }
 
@@ -268,6 +282,10 @@ function initializeEventListeners() {
 
       if (e.target.closest("#closeAddExternalFactors") || e.target.closest("#cancelAddExternalFactors")) {
         elements.addExternalFactorsModal?.classList.remove("active")
+      }
+
+      if (e.target.closest("#closeGenerateExternalFactors") || e.target.closest("#cancelGenerateExternalFactors")) {
+        elements.generateExternalFactorsModal?.classList.remove("active")
       }
 
       if (e.target.closest("#closeGardenEvolution") || e.target.closest("#cancelAddGardenEvolution")) {

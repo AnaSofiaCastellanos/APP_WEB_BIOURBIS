@@ -287,7 +287,7 @@
         //== FACTORES EXTERNOS ==
             //Agregar factores externos de una jardinera
             if(isset($_POST["agregarFactoresExternosBtn"])){
-                //Recuperar el id de la jardinera a actualizar desde el formulario
+                //Recuperar el id de la jardinera desde el formulario
                 $idJardinera=$_POST["gardenSelectedId"];
 
                 //Recuperar los valores del formulario
@@ -304,6 +304,27 @@
                     $_SESSION["alerta"]="factorExternoRegistrado";
 
                 //Si el registro no es exitoso
+                }else{
+                    $_SESSION["alerta"]="errorAlRegistrarFactor";
+                }
+            }
+
+            //Generar factores externos de una jardinera
+            if(isset($_POST["generarFactoresExternosBtn"])){
+                //Recuperar los valores del formulario 
+                $idJardinera=$_POST["gardenIdGenerateExternalFactor"];
+                $humedad=$_POST["humidityGenerated"];
+                $cantidadAgua=$_POST["amountWaterGenerated"];
+                $temperatura=$_POST["temperatureGenerated"];
+                $tipoClima=$_POST["typeWeatherGenerated"];
+
+                $idTipoClima=consultarTipoClimaPorDescripcion($tipoClima);
+
+                if(agregarFactoresExternos($idJardinera, $humedad, $cantidadAgua, $temperatura, $idTipoClima)){
+                    //Registrar la actividad del usuario
+                    registrarActividadUsuario("Factores Externos","Generar", "Generó un factor externo automático para la jardinera N° {$idJardinera}", $usuarioActivo);
+
+                    $_SESSION["alerta"]="factorExternoRegistrado";
                 }else{
                     $_SESSION["alerta"]="errorAlRegistrarFactor";
                 }
@@ -651,29 +672,29 @@
                     <span>Perfil</span>
                 </a>
 
-                <a href="homeUsuario.php?page=gardens" class="nav-item action-card" data-action="view-gardens" title="Mis Jardineras" style="border:none">
+                <a href="homeUsuario.php?page=gardens" class="nav-item action-card" data-action="view-gardens" title="Jardineras" style="border:none">
                     <i class="fas fa-leaf"></i>
-                    <span>Mis Jardineras</span>
+                    <span>Jardineras</span>
                 </a>
 
-                <a href="homeUsuario.php?page=add-garden" class="nav-item action-card" data-action="add-garden" title="Agregar Jardinera" style="border:none">
+                <a href="homeUsuario.php?page=add-garden" class="nav-item action-card" data-action="add-garden" title="Agregar Jardineras" style="border:none">
                     <i class="fas fa-plus-circle"></i>
-                    <span>Agregar Jardinera</span>
+                    <span>Agregar Jardineras</span>
                 </a>
 
-                <a href="homeUsuario.php?page=externalFactors" class="nav-item action-card" data-action="add-view--external-factors" title="Registrar Factores Externos" style="border:none">
+                <a href="homeUsuario.php?page=externalFactors" class="nav-item action-card" data-action="add-view--external-factors" title="Factores Externos" style="border:none">
                     <i class="fas fa-cloud-sun"></i>
-                    <span>Registrar Factores Externos</span>
+                    <span>Factores Externos</span>
                 </a>
 
-                <a href="homeUsuario.php?page=gardenEvolution" class="nav-item action-card" data-action="add-view-garden-evolution" title="Evolución Jardinera" style="border:none">
+                <a href="homeUsuario.php?page=gardenEvolution" class="nav-item action-card" data-action="add-view-garden-evolution" title="Evolución Jardineras" style="border:none">
                    <i class="fas fa-hourglass-half"></i>
-                    <span>Evolución Jardinera</span>
+                    <span>Evolución Jardineras</span>
                 </a>
 
-                <a href="homeUsuario.php?page=monitoring" class="nav-item action-card" data-action="view-monitoring" title="Monitoreo" style="border:none">
+                <a href="homeUsuario.php?page=monitoring" class="nav-item action-card" data-action="view-monitoring" title="Monitoreos" style="border:none">
                     <i class="fas fa-chart-line"></i>
-                    <span>Monitoreo</span>
+                    <span>Monitoreos</span>
                 </a>
 
                 <a href="homeUsuario.php?page=reports" class="nav-item action-card" data-action="view-report" title="Reportes" style="border:none">
@@ -683,7 +704,7 @@
 
                 <a href="homeUsuario.php?page=request" class="nav-item action-card" data-action="view-request" title="Solicitudes" style="border:none">
                     <i class="fas fa-inbox"></i>
-                    <span>Mis Solicitudes</span>
+                    <span>Solicitudes</span>
                 </a>
 
                 <a href="homeUsuario.php?page=logout" class="nav-item action-card" data-action="logout" title="Cerrar Sesión" style="border:none">
@@ -794,7 +815,7 @@
                 <div class="content-wrapper">
                     <div class="page-header">
                         <h1><i class="fas fa-plus-circle"></i> Agregar una Nueva Jardinera</h1>
-                        <p>Cree una nueva jardinera y comience a monitorear sus cultivos</p>
+                        <p>Agregue una nueva jardinera y comience a monitorear sus cultivos</p>
                     </div>
 
                     <form class="garden-form" id="addGardenForm" action="homeUsuario.php" method="post" autocomplete="on">
@@ -803,7 +824,7 @@
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label for="gardenName">Nombre de la Jardinera</label>
-                                    <input type="text" id="gardenName" name="gardenName" placeholder="Mi Primer Jardinera"> 
+                                    <input type="text" id="gardenName" name="gardenName" placeholder="Ej: Mi Primer Jardinera"> 
                                     <p id="errorNombreJardineraAgregarJardinera" class="error-message"></p>
                                 </div> 
                             </div>
@@ -914,6 +935,7 @@
                     </div>
                     <div class="gardens-grid">
                         <?php
+                        $registroFactores=1;
                         $resultadoConsultarJardineras=consultarJardineras($usuarioActivo);
                         if(mysqli_num_rows($resultadoConsultarJardineras)>0){
                             while($datosJardinera=mysqli_fetch_assoc($resultadoConsultarJardineras)){
@@ -932,29 +954,58 @@
                                                     <div class="garden-type"><?php echo $fase["faseNombre"] ?> • <?php echo $semilla["semNombre"] ?></div>
                                                 </div>
                                             </div>
-                                            <p class="garden-description">Anteriores registros</p>
-                                                <ul class="info-list">
-                                                    <?php 
-                                                    while($datosFactoresExternos=mysqli_fetch_assoc($resultadoConsultarFEPorJardinera)){
-                                                        $resultadoConsultarTipoClima=consultarTipoClima($datosFactoresExternos["idTipoClima"]);
-                                                        if(mysqli_num_rows($resultadoConsultarTipoClima)>0){
-                                                            $datosTipoClima=arregloDatos($resultadoConsultarTipoClima);
-                                                            $datosFactoresExternos["idTipoClima"]=$datosTipoClima["tipoClimaDescripcion"];
-                                                        } ?>
-                                                        <li>
-                                                            <span class="info-label">Humedad</span>
-                                                            <span class="info-value"><?php echo $datosFactoresExternos["factHumedad"] ?>º</span>
-                                                        </li>
-                                                        <li><span class="info-label">Clima</span><span class="info-value"><?php echo $datosFactoresExternos["idTipoClima"] ?></span></li>
-                                                        <li><span class="info-label">Temperatura</span><span class="info-value"><?php echo $datosFactoresExternos["factTemperatura"] ?>º</span></li>
-                                                        <li><span class="info-label">Agua</span><span class="info-value"><?php echo $datosFactoresExternos["factCantidadAgua"] ?>ml</span></li>
-                                                        <?php 
-                                                    } ?>
-                                                </ul>
-                                            <button class="btn-primary addNewExternalFactorsBtn"
-                                                data-id="<?php echo $datosJardinera['idJardinera']; ?>">
-                                                <i class="fas fa-plus"></i> Agregar
-                                            </button>
+                                            <p class="garden-description">Factores externos Registrados</p>
+                                            <div class="external-factors-history">
+                                                <?php 
+                                                while($datosFactoresExternos=mysqli_fetch_assoc($resultadoConsultarFEPorJardinera)){
+                                                    $numeroRegistro = $registroFactores++;
+                                                    $resultadoConsultarTipoClima=consultarTipoClima($datosFactoresExternos["idTipoClima"]);
+
+                                                    if(mysqli_num_rows($resultadoConsultarTipoClima)>0){
+                                                        $datosTipoClima=arregloDatos($resultadoConsultarTipoClima);
+                                                        $datosFactoresExternos["idTipoClima"]=$datosTipoClima["tipoClimaDescripcion"];
+                                                    }
+                                                ?>
+                                                    <div class="external-factor-card">
+                                                        <div class="external-factor-header">
+                                                            <i class="fas fa-cloud-sun"></i>
+                                                            <span>Registro Nº <?php echo $numeroRegistro?></span>
+                                                        </div>
+                                                        <ul class="info-list">
+                                                            <li>
+                                                                <span class="info-label">Humedad</span>
+                                                                <span class="info-value"><?php echo $datosFactoresExternos["factHumedad"] ?>%</span>
+                                                            </li>
+
+                                                            <li>
+                                                                <span class="info-label">Clima</span>
+                                                                <span class="info-value"><?php echo $datosFactoresExternos["idTipoClima"] ?></span>
+                                                            </li>
+
+                                                            <li>
+                                                                <span class="info-label">Temperatura</span>
+                                                                <span class="info-value"><?php echo $datosFactoresExternos["factTemperatura"] ?>°C</span>
+                                                            </li>
+
+                                                            <li>
+                                                                <span class="info-label">Agua</span>
+                                                                <span class="info-value"><?php echo $datosFactoresExternos["factCantidadAgua"] ?> ml</span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                <?php } ?>
+                                            </div>
+                                            <div class="garden-buttons">
+                                                <button class="btn-primary addNewExternalFactorsBtn"
+                                                    data-id="<?php echo $datosJardinera['idJardinera']; ?>">
+                                                    <i class="fas fa-plus"></i> Agregar
+                                                </button>
+
+                                                <button class="btn-primary generateNewExternalFactorsBtn"
+                                                    data-id="<?php echo $datosJardinera['idJardinera']; ?>">
+                                                    <i class="fas fa-plus"></i> Generar
+                                                </button>
+                                            </div>
                                         </div>
                                         <?php
                                     }else{ ?>
@@ -965,10 +1016,21 @@
                                             <h3>No hay factores externos registrados para la jardinera "<?php echo $nombreJardinera; ?>"</h3>
                                             <p>Cuando registre un factor externo, aparecerá aquí para que pueda visualizarlo.</p>
 
-                                            <button class="btn-primary addNewExternalFactorsBtn btn-nohay"
-                                                data-id="<?php echo $datosJardinera['idJardinera']; ?>">
-                                                <i class="fas fa-plus"></i> Agregar
-                                            </button>
+                                            <table>
+                                                <th>
+                                                    <button class="btn-primary addNewExternalFactorsBtn btn-nohay"
+                                                        data-id="<?php echo $datosJardinera['idJardinera']; ?>">
+                                                        <i class="fas fa-plus"></i> Agregar
+                                                    </button>
+                                                </th>
+                                                <th></th>
+                                                <th>
+                                                    <button class="btn-primary generateNewExternalFactorsBtn btn-nohay"
+                                                        data-id="<?php echo $datosJardinera['idJardinera']; ?>">
+                                                        <i class="fas fa-plus"></i> Generar
+                                                    </button>
+                                                </th>
+                                            </table>  
                                         </div>
                                         <?php
                                     }                 
@@ -1028,24 +1090,57 @@
                                                     <div class="garden-type"><?php echo $fase["faseNombre"] ?> • <?php echo $semilla["semNombre"] ?></div>
                                                 </div>
                                             </div>
-                                            <p class="garden-description">Evolución registrada de esta jardinera</p>
-                                                <?php while($datosEvolucion=mysqli_fetch_assoc($resultadoConsultarEvolucionPorJardinera)){
-                                                    $registroText = $registro++; ?>
-                                                    <div class="evolution-item">
-                                                        <ul class="info-list">
-                                                            <li><span class="info-label">Registro</span><span class="info-value"><?php echo $registroText ?></span></li>
-                                                            <li><span class="info-label">Fecha</span><span class="info-value"><?php echo $datosEvolucion["segJardineraFecha"] ?></span></li>
-                                                            <li><span class="info-label">Porcentaje</span><span class="info-value"><?php echo $datosEvolucion["segJardineraPorcentaje"] ?>%</span></li>
-                                                        </ul>
-                                                        <p class="evolution-note"><strong>Nota:</strong> <?php echo $datosEvolucion["segJardineraNota"] ?></p>
-                                                        <?php if(!empty($datosEvolucion['segJardineraImagen'])): ?>
-                                                            <img class="evolution-image" src="<?php echo $datosEvolucion['segJardineraImagen'] ?>" alt="Imagen de evolución">
-                                                        <?php endif; ?>
+                                            <p class="garden-description">Evoluciones registradas</p>
+                                                <div class="evolution-history">
+                                                    <?php while($datosEvolucion=mysqli_fetch_assoc($resultadoConsultarEvolucionPorJardinera)){
+                                                        $registroText = $registro++;
+                                                    ?>
+                                                        <div class="evolution-card">
+                                                            <div class="evolution-card-header">
+                                                                <i class="fas fa-seedling"></i>
+                                                                <span>Registro Nº <?php echo $registroText; ?></span>
+                                                            </div>
+
+                                                            <ul class="info-list">
+
+                                                                <li>
+                                                                    <span class="info-label">Fecha</span>
+                                                                    <span class="info-value"><?php echo $datosEvolucion["segJardineraFecha"] ?></span>
+                                                                </li>
+
+                                                                <li>
+                                                                    <span class="info-label">Evolución</span>
+                                                                    <span class="info-value">
+                                                                        <?php echo $datosEvolucion["segJardineraPorcentaje"] ?>%
+                                                                    </span>
+                                                                </li>
+
+                                                            </ul>
+
+                                                            <div class="evolution-note-card">
+                                                                <i class="fas fa-book"></i><strong>Nota</strong>
+                                                                <p><?php 
+                                                                echo ($datosEvolucion["segJardineraNota"] !="") ? $datosEvolucion["segJardineraNota"]  : "No se registró ninguna nota";
+                                                                ?></p>
+                                                            </div>
+
+                                                            <?php if(!empty($datosEvolucion['segJardineraImagen'])): ?>
+
+                                                                <div class="evolution-image-container">
+                                                                    <img class="evolution-image"
+                                                                        src="<?php echo $datosEvolucion['segJardineraImagen'] ?>"
+                                                                        alt="Imagen de evolución">
+                                                                </div>
+
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php } ?>
                                                     </div>
-                                                <?php } ?>
-                                            <button class="btn-primary addNewGardenEvolutionBtn" data-id="<?php echo $datosJardinera['idJardinera']; ?>" data-fase="<?php echo $datosJardinera['idFase']; ?>">
-                                                <i class="fas fa-plus"></i> Agregar
-                                            </button>
+                                            <div class="garden-buttons">
+                                                <button class="btn-primary addNewGardenEvolutionBtn" data-id="<?php echo $datosJardinera['idJardinera']; ?>" data-fase="<?php echo $datosJardinera['idFase']; ?>" style="margin-top:10px">
+                                                    <i class="fas fa-plus"></i> Agregar
+                                                </button>
+                                            </div>
                                         </div>
                                         <?php
                                     }else{ ?>
@@ -1140,106 +1235,164 @@
 
                                         $tendencia = calcularTendencia($porcentajes);
                                         ?>
+                                        <div class="monitoring-garden-card">
+                                            <div class="monitoring-header">
+                                                <div>
+                                                    <h2>Jardinera: </h2>"<?php echo $nombreJardinera; ?>"
+                                                </div>
 
-                                        <div class="monitoring-grid">
-
-                                            <div class="monitoring-card">
-                                                <h3>Porcentaje de Evolución</h3>
-                                                <p><?php echo $datosJardinera["jarPorcentajeEvolucion"]?>%</p>
+                                                <div class="monitoring-health">
+                                                    <span>Salud</span>
+                                                    <strong><?php echo round($indiceSalud,1); ?>%</strong>
+                                                </div>
                                             </div>
 
-                                            <div class="monitoring-card">
-                                                <h3>Promedio Temperatura</h3>
-                                                <p><?php echo $promedioTemperatura; ?>°C</p>
+                                            <div class="monitoring-grid">
+                                                <div class="monitoring-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Porcentaje de Evolución</h3>
+                                                        <p><?php echo $datosJardinera["jarPorcentajeEvolucion"]; ?>%</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="monitoring-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-temperature-high"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Promedio Temperatura</h3>
+                                                        <p><?php echo $promedioTemperatura; ?>°C</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="monitoring-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-droplet"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Promedio Humedad</h3>
+                                                        <p><?php echo $promedioHumedad; ?>%</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="monitoring-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-cloud-rain"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Promedio Agua</h3>
+                                                        <p><?php echo $promedioAgua; ?> ml</p>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div class="monitoring-card">
-                                                <h3>Promedio Humedad</h3>
-                                                <p><?php echo $promedioHumedad; ?>%</p>
+                                            <div class="monitoring-summary-grid">
+                                                <div class="monitoring-card small-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-seedling"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Semilla</h3>
+                                                        <p><?php echo $semilla["semNombre"] ?? 'No disponible'; ?></p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="monitoring-card small-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-leaf"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Fase actual</h3>
+                                                        <p><?php echo $fase["faseNombre"] ?? 'No disponible'; ?></p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="monitoring-card small-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-calendar-days"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Días de crecimiento</h3>
+                                                        <p><?php echo $diasCrecimiento; ?></p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="monitoring-card small-card">
+                                                    <div class="monitoring-icon">
+                                                        <i class="fas fa-heart-pulse"></i>
+                                                    </div>
+
+                                                    <div class="monitoring-info">
+                                                        <h3>Salud de la jardinera</h3>
+                                                        <p><?php echo round($indiceSalud, 1); ?>%</p>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div class="monitoring-card">
-                                                <h3>Promedio Agua</h3>
-                                                <p><?php echo $promedioAgua; ?>ml</p>
+                                            <div class="monitoring-charts">
+                                                <div class="section">
+                                                    <h2>Factores Externos</h2>
+                                                    <canvas id="factoresChart<?php echo $i; ?>"></canvas>
+                                                </div>
+
+                                                <div class="section">
+                                                    <h2>Tendencia de Crecimiento</h2>
+                                                    <canvas id="tendenciaChart<?php echo $i; ?>"></canvas>
+                                                </div>
                                             </div>
 
-                                            <div class="monitoring-card">
-                                                <h3>Indice de Salud</h3>
-                                                <p><?php echo $indiceSalud; ?>%</p>
-                                            </div>
-
-                                        </div>
-
-                                        <div class="monitoring-summary-grid">
-                                            <div class="monitoring-card small-card">
-                                                <h3>Semilla</h3>
-                                                <p><?php echo $semilla["semNombre"] ?? 'No disponible'; ?></p>
-                                            </div>
-                                            <div class="monitoring-card small-card">
-                                                <h3>Fase actual</h3>
-                                                <p><?php echo $fase["faseNombre"] ?? 'N/A'; ?></p>
-                                            </div>
-                                            <div class="monitoring-card small-card">
-                                                <h3>Días de crecimiento</h3>
-                                                <p><?php echo $diasCrecimiento; ?></p>
-                                            </div>
-                                            <div class="monitoring-card small-card">
-                                                <h3>Salud de la jardinera</h3>
-                                                <p><?php echo round($indiceSalud, 1); ?>%</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="section">
-                                            <h2>Factores Externos</h2>
-                                            <canvas id="factoresChart<?php echo $i; ?>"></canvas>
-                                        </div>
-
-                                        <div class="section">
-                                            <h2>Tendencia de Crecimiento</h2>
-                                            <canvas id="tendenciaChart<?php echo $i; ?>"></canvas>
-                                        </div>
-
-                                        <div class="section">
-                                            <h2>Alertas y Recomendaciones</h2>
-                                            <?php
-                                                //Consultar las alertas activas de la jardinera
-                                                $resultadoConsultarAlertas=consultarAlertas($usuarioActivo);
-                                                    
-                                                //Si existe algun registro de alerta activa
-                                                if(mysqli_num_rows($resultadoConsultarAlertas)>0){
-                                                    echo "<div class='monitoring-alerts'>";
-                                                    while($datosAlertas=mysqli_fetch_assoc($resultadoConsultarAlertas)){
-                                                        echo "<div class='alert-item'>";
-                                                        echo "<div class='alert-date'>" . date("d/m/Y", strtotime($datosAlertas["alerFecha"])) . "</div>";
-                                                        echo "<div class='alert-message'>" . htmlspecialchars($datosAlertas["alerDescripcion"], ENT_QUOTES, 'UTF-8') . "</div>";
+                                            <div class="section">
+                                                <h2>Alertas y Recomendaciones</h2>
+                                                <?php
+                                                    //Consultar las alertas activas de la jardinera
+                                                    $resultadoConsultarAlertas=consultarAlertas($usuarioActivo);
+                                                        
+                                                    //Si existe algun registro de alerta activa
+                                                    if(mysqli_num_rows($resultadoConsultarAlertas)>0){
+                                                        echo "<div class='monitoring-alerts'>";
+                                                        while($datosAlertas=mysqli_fetch_assoc($resultadoConsultarAlertas)){
+                                                            echo "<div class='alert-item'>";
+                                                            echo "<div class='alert-date'>" . date("d/m/Y", strtotime($datosAlertas["alerFecha"])) . "</div>";
+                                                            echo "<div class='alert-message'>" . htmlspecialchars($datosAlertas["alerDescripcion"], ENT_QUOTES, 'UTF-8') . "</div>";
+                                                            echo "</div>";
+                                                        }
                                                         echo "</div>";
+                                                    }else{
+                                                        echo '<div class="empty-state full-width">
+                                                            <div class="empty-state-icon">
+                                                                <i class="fas fa-inbox"></i>
+                                                            </div>
+                                                            <h3>El usuario no tiene alertas activas de ninguna de sus jardineras</h3>
+                                                            <p>Cuando el sistema genere una nueva alerta aparecerá aquí automáticamente.</p>
+                                                        </div>';
                                                     }
-                                                    echo "</div>";
-                                                }else{
-                                                    echo '<div class="empty-state full-width">
-                                                        <div class="empty-state-icon">
-                                                            <i class="fas fa-inbox"></i>
-                                                        </div>
-                                                        <h3>El usuario no tiene alertas activas de ninguna de sus jardineras</h3>
-                                                        <p>Cuando el sistema genere una nueva alerta aparecerá aquí automáticamente.</p>
-                                                    </div>';
-                                                }
-                                            ?>
+                                                ?>
+                                            </div>
+
+                                            <script>
+                                                window.jardineras = window.jardineras || [];
+
+                                                window.jardineras.push({
+                                                    id: <?php echo $i; ?>,
+                                                    fechas: <?php echo json_encode($fechas); ?>,
+                                                    crecimiento: <?php echo json_encode($porcentajes); ?>,
+                                                    temperatura: <?php echo json_encode($temp); ?>,
+                                                    humedad: <?php echo json_encode($hum); ?>,
+                                                    agua: <?php echo json_encode($agua); ?>,
+                                                    tendencia: <?php echo json_encode($tendencia); ?>
+                                                });
+                                            </script>
                                         </div>
-
-                                        <script>
-                                            window.jardineras = window.jardineras || [];
-
-                                            window.jardineras.push({
-                                                id: <?php echo $i; ?>,
-                                                fechas: <?php echo json_encode($fechas); ?>,
-                                                crecimiento: <?php echo json_encode($porcentajes); ?>,
-                                                temperatura: <?php echo json_encode($temp); ?>,
-                                                humedad: <?php echo json_encode($hum); ?>,
-                                                agua: <?php echo json_encode($agua); ?>,
-                                                tendencia: <?php echo json_encode($tendencia); ?>
-                                            });
-                                        </script>
                                         <?php
                                         $i++;
                                     }else{
@@ -1515,7 +1668,7 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="updateGardenName">Nombre de la Jardinera</label>
-                            <input type="text" id="updateGardenName" name="updateGardenName" placeholder="Mi Primer Jardinera">
+                            <input type="text" id="updateGardenName" name="updateGardenName" placeholder="Ej: Mi Primer Jardinera">
                         </div>
                         <p id="errorNombreJardineraActualizarJardinera" class="error-message"></p>
                     </div>
@@ -1646,6 +1799,127 @@
         </div>
     </div>
 
+    <!-- Generate External Factors Modal -->
+    <div class="modal" id="generateExternalFactorsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Generar Factores Externos</h3>
+                <button class="modal-close" id="closeGenerateExternalFactors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="generateExternalFactorsForm" action="homeUsuario.php" method="POST" autocomplete="on">
+
+                <input type="hidden" id="gardenIdGenerateExternalFactor" name="gardenIdGenerateExternalFactor">
+
+                <?php
+                    $apiKey = "47cbf9d7f344d3a63c9da5d4db33df11";
+                    $ciudad = "Bogota";
+
+                    $url = "https://api.openweathermap.org/data/2.5/weather?q=$ciudad&appid=$apiKey&units=metric&lang=es";
+
+                    $respuesta = file_get_contents($url);
+                    $data = json_decode($respuesta, true);
+
+                    if ($data["cod"] == 200) {
+
+                        $temperatura = $data["main"]["temp"];
+                        $humedad = $data["main"]["humidity"];
+
+                        if(isset($data["rain"]["1h"])){
+                            $cantidadAgua = $data["rain"]["1h"];
+                        }elseif(isset($data["rain"]["3h"])){
+                            $cantidadAgua = $data["rain"]["3h"];
+                        }else{
+                            $cantidadAgua = 0;
+                        }
+
+                        $tipoClima = obtenerTipoClima($temperatura,$humedad);
+                ?>
+
+                <div class="generatedFactors">
+
+                    <div class="generatedFactors-header">
+                        <div class="generatedFactors-icon">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+
+                        <div>
+                            <h4>Factores obtenidos automáticamente</h4>
+                            <p>Estos datos fueron consultados desde OpenWeather.</p>
+                        </div>
+                    </div>
+
+                    <div class="generatedFactors-grid">
+
+                        <div class="generatedFactor-card">
+                            <i class="fas fa-temperature-high temperature"></i>
+
+                            <span>Temperatura</span>
+
+                            <strong><?php echo $temperatura; ?> °C</strong>
+                        </div>
+
+                        <div class="generatedFactor-card">
+                            <i class="fas fa-droplet humidity"></i>
+
+                            <span>Humedad</span>
+
+                            <strong><?php echo $humedad; ?> %</strong>
+                        </div>
+
+                        <div class="generatedFactor-card">
+                            <i class="fas fa-cloud-rain water"></i>
+
+                            <span>Agua</span>
+
+                            <strong><?php echo $cantidadAgua; ?> ml</strong>
+                        </div>
+
+                        <div class="generatedFactor-card">
+                            <i class="fas fa-cloud weather"></i>
+
+                            <span>Tipo de clima</span>
+
+                            <strong><?php echo $tipoClima; ?></strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <?php
+                    }else{
+                ?>
+
+                    <div class="generatedFactors-error">
+                        <i class="fas fa-circle-exclamation"></i>
+                        No fue posible obtener la información climática.
+                    </div>
+
+                <?php } ?>
+
+                <input type="hidden" id="humidityGenerated" name="humidityGenerated" value="<?php echo $humedad ?>">
+                <input type="hidden" id="temperatureGenerated" name="temperatureGenerated" value="<?php echo $temperatura ?>">
+                <input type="hidden" id="amountWaterGenerated" name="amountWaterGenerated" value="<?php echo $cantidadAgua ?>">
+                <input type="hidden" id="typeWeatherGenerated" name="typeWeatherGenerated" value="<?php echo $tipoClima ?>">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelGenerateExternalFactors">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn-primary" name="generarFactoresExternosBtn" id="generarFactoresExternosBtn">
+                        <i class="fas fa-plus"></i>
+                        Generar
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <!-- Add Garden Evolution Modal -->
     <div class="modal" id="addGardenEvolutionModal">
         <div class="modal-content">
@@ -1688,7 +1962,7 @@
                         id="notaEvolucion" 
                         name="notaEvolucion" 
                         rows="4" 
-                        placeholder="Escribe una observación sobre la evolución de la jardinera..."
+                        placeholder="Escriba una observación sobre la evolución de su jardinera..."
                     ></textarea>
                 </div>
 

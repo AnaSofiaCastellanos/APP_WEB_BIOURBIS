@@ -163,13 +163,13 @@ body {
 
 .topbar {
     background: #0d6b52;
-    padding: 15px 25px;
     border-radius: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: white;
     box-shadow: 0 12px 30px rgba(13, 107, 82, .12);
+    height: 4%;
 }
 
 .search-box {
@@ -184,17 +184,6 @@ body {
     border: none;
     outline: none;
     margin-left: 8px;
-}
-
-.top-icons {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.top-icons img {
-    width: 40px;
-    border-radius: 50%;
 }
 
 /* MODULES */
@@ -507,7 +496,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    min-height: 240px;
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
@@ -1277,12 +1265,6 @@ td.acciones .table-button {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
-    }
-
-    .top-icons {
-        gap: 12px;
-        width: 100%;
-        justify-content: flex-start;
     }
 
     .search-box {

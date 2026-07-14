@@ -19,21 +19,24 @@
 
         //Si existe algun usuario registrado
         if(mysqli_num_rows($resultadoVerificarExistencia)>0){
+            $datosUsuario=arregloDatos($resultadoVerificarExistencia);
+
             //Sesión activa del usuario existente
             $_SESSION["numeroDocumento"]=$numeroDocumento;
-      
-            //Verificar si el usuario existente tiene su cuenta verificada
-            $resultadoUsuarioVerificado=consultarSiUsuarioVerficado($numeroDocumento);
 
-            if(mysqli_num_rows($resultadoUsuarioVerificado)>0){    
-                //Enviar correo con el código de verificación para recuperar la contraseña      
-                include("../php/mailRecuperarContrasena.php"); 
-                $_SESSION['estadoForm'] = 'identifacionOK';
+            if($datosUsuario["usuEstado"]==='Activo'){  
+                if($datosUsuario["usuEstadoCorreo"]==='Verificado'){
+                    //Enviar correo con el código de verificación para recuperar la contraseña      
+                    include("../php/mailRecuperarContrasena.php"); 
 
-            }else{ 
-                //Ejecutar mensaje de que la cuenta no esta verificada
-                $_SESSION["alerta"]="cuentaNoVerificada"; 
-            }   
+                    $_SESSION['estadoForm'] = 'identifacionOK';
+                }else{ 
+                    //Ejecutar mensaje de que la cuenta no esta verificada
+                    $_SESSION["alerta"]="cuentaNoVerificada"; 
+                }  
+            }else{
+                $_SESSION["alerta"]="cuentaInactiva";
+            }
         }else{
             //Ejecutar mensaje de usuario no registrado
             $_SESSION["alerta"]="usuarioNoRegistrado"; 
@@ -279,6 +282,24 @@
                             rutaFalse:"../forms/formRecuperarContrasena.php"
 
                         });
+                    </script>
+                    <?php
+                break;
+
+                case "cuentaInactiva": ?>
+                    <script>
+                        //Mensaje cuando la cuenta del usuario se encuentra inactiva
+                        mostrarMensaje({
+                            title:"¡Su cuenta se encuentra inactiva!",
+                            text:"Lo invitamos a comunicarse con un administrador para comenzar su proceso de reactivación",
+                            icon:"error",
+                                                            
+                            //Si el usuario acepta enviar la solicitud
+                            rutaTrue:"../index.php",
+
+                            //Si el usuario no acepta enviar la solicitud
+                            rutaFalse:"../forms/formAcceso.php"
+                        })
                     </script>
                     <?php
                 break;

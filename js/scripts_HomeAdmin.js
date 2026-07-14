@@ -22,11 +22,6 @@ const elementsAdmin={
     cancelInactivateProfile:document.getElementById("cancelInactivateProfile"),
     closeInactivateProfile: document.getElementById("closeInactivateProfile"),
 
-    //VISUALIZAR TIPOS DE DOCUMENTO
-    typeDocumentModal:document.getElementById("typeDocumentModal"),
-    closeTypeDocument:document.getElementById("closeTypeDocument"),
-    cancelTypeDocument:document.getElementById("cancelTypeDocument"),
-
     //AGREGAR TIPO DE DOCUMENTO
     addTypeDocumentBtn:document.getElementById("addTypeDocumentBtn"),
     addTypeDocumentModal:document.getElementById("addTypeDocumentModal"),
@@ -78,11 +73,6 @@ const elementsAdmin={
     cancelInactivateSeed:document.getElementById("cancelInactivateSeed"),
     closeInactivateSeed:document.getElementById("closeInactivateSeed"),
 
-    //VISUALIZAR TIPOS DE SEMILLA
-    typeSeedModal:document.getElementById("typeSeedModal"),
-    cancelTypeSeed:document.getElementById("cancelTypeSeed"),
-    closeTypeSeed:document.getElementById("closeTypeSeed"),
-
     //AGREGAR TIPO DE SEMILLA
     addTypeSeedBtn:document.getElementById("addTypeSeedBtn"),
     addTypeSeedModal:document.getElementById("addTypeSeedModal"),
@@ -120,11 +110,6 @@ const elementsAdmin={
     updateTechnicalSheetForm:document.getElementById("updateTechnicalSheetForm"),
     cancelUpdateTechnicalSheet:document.getElementById("cancelUpdateTechnicalSheet"),
 
-    //VISUALIZAR TIPOS DE CLIMA
-    typeWeatherModal:document.getElementById("typeWeatherModal"),
-    closeTypeWeather:document.getElementById("closeTypeWeather"),
-    cancelTypeWeather:document.getElementById("cancelTypeWeather"),
-
     //AGREGAR TIPO DE CLIMA
     addTypeWeatherBtn:document.getElementById("addTypeWeatherBtn"),
     addTypeWeatherModal:document.getElementById("addTypeWeatherModal"),
@@ -145,11 +130,6 @@ const elementsAdmin={
     closeInactivateTypeWeather:document.getElementById("closeInactivateTypeWeather"),
     inactivateTypeWeatherForm:document.getElementById("inactivateTypeWeatherForm"),
     cancelInactivateTypeWeather:document.getElementById("cancelInactivateTypeWeather"),
-
-    //VISUALIZAR TIPOS DE TIERRA
-    typeSoilModal:document.getElementById("typeSoilModal"),
-    closeTypeSoil:document.getElementById("closeTypeSoil"),
-    cancelTypeSoil:document.getElementById("cancelTypeSoil"),
 
     //AGREGAR TIPO DE TIERRA
     addTypeSoilBtn:document.getElementById("addTypeSoilBtn"),
@@ -203,6 +183,22 @@ const elementsAdmin={
     closeInactivateGarden:document.getElementById("closeInactivateGarden"),
     inactivateGardenForm:document.getElementById("inactivateGardenForm"),
     cancelInactivateGarden:document.getElementById("cancelInactivateGarden"),
+  //===
+
+  //=== ALERTA ===
+    //ACTUALIZAR ALERTA
+    updateAlertBtn:document.getElementById("updateAlertBtn"),
+    updateAlertModal:document.getElementById("updateAlertModal"),
+    closeUpdateAlert:document.getElementById("closeUpdateAlert"),
+    updateAlertForm:document.getElementById("updateAlertForm"),
+    cancelUpdateAlert:document.getElementById("cancelUpdateAlert"),
+
+    //INACTIVAR ALERTA
+    inactivateAlertBtn:document.getElementById("inactivateAlertBtn"),
+    inactivateAlertModal:document.getElementById("inactivateAlertModal"),
+    closeInactivateAlert:document.getElementById("closeInactivateAlert"),
+    inactivateAlertForm:document.getElementById("inactivateAlertForm"),
+    cancelInactivateAlert:document.getElementById("cancelInactivateAlert"),
   //===
 
   //=== FACTORES EXTERNOS ===
@@ -349,14 +345,6 @@ function initializeEventListeners() {
       return;
     }
 
-    // =====  VISUALIZAR TIPOS DE DOCUMENTO =====
-    const typeDocumentBtn = e.target.closest(".typeDocumentBtn");
-
-    if (typeDocumentBtn) {
-      elementsAdmin.typeDocumentModal?.classList.add("active");
-      return;
-    }
-
     // =====  AGREGAR TIPOS DE DOCUMENTO =====
     const addTypeDocumentBtn = e.target.closest(".addTypeDocumentBtn");
 
@@ -433,14 +421,6 @@ function initializeEventListeners() {
       return;
     }
 
-    // =====  VISUALIZAR TIPOS DE SEMILLA =====
-    const typeSeedBtn = e.target.closest(".typeSeedBtn");
-
-    if (typeSeedBtn) {
-      elementsAdmin.typeSeedModal?.classList.add("active");
-      return;
-    }
-
     // =====  AGREGAR TIPOS DE SEMILLA=====
     const addTypeSeedBtn = e.target.closest(".addTypeSeedBtn");
 
@@ -493,14 +473,6 @@ function initializeEventListeners() {
       return;
     }
 
-    // =====  VISUALIZAR TIPOS DE CLIMA =====
-    const typeWeatherBtn = e.target.closest(".typeWeatherBtn");
-
-    if (typeWeatherBtn) {
-      elementsAdmin.typeWeatherModal?.classList.add("active");
-      return;
-    }
-
     // =====  AGREGAR TIPOS DE CLIMA =====
     const addTypeWeatherBtn = e.target.closest(".addTypeWeatherBtn");
 
@@ -530,14 +502,6 @@ function initializeEventListeners() {
       document.getElementById("inactivateTypeWeatherId").value = id;
 
       elementsAdmin.inactivateTypeWeatherModal?.classList.add("active");
-      return;
-    }
-
-    // =====  VISUALIZAR TIPOS DE TIERRA =====
-    const typeSoilBtn = e.target.closest(".typeSoilBtn");
-
-    if (typeSoilBtn) {
-      elementsAdmin.typeSoilModal?.classList.add("active");
       return;
     }
 
@@ -614,6 +578,30 @@ function initializeEventListeners() {
       document.getElementById("inactivateGardenId").value = id;
 
       elementsAdmin.inactivateGardenModal?.classList.add("active");
+      return;
+    }
+
+    // =====  ACTUALIZAR ALERTA  =====
+    const updateAlertBtn = e.target.closest(".updateAlertBtn");
+
+    if (updateAlertBtn) {
+      const id = updateAlertBtn.dataset.id;
+
+      document.getElementById("updateAlertId").value = id;
+
+      elementsAdmin.updateAlertModal?.classList.add("active");
+      return;
+    }
+
+    // =====  INACTIVAR ALERTA =====
+    const inactivateAlertBtn = e.target.closest(".inactivateAlertBtn");
+
+    if (inactivateAlertBtn) {
+      const id = inactivateAlertBtn.dataset.id;
+
+      document.getElementById("inactivateAlertId").value = id;
+
+      elementsAdmin.inactivateAlertModal?.classList.add("active");
       return;
     }
 
@@ -760,11 +748,6 @@ function initializeEventListeners() {
       elementsAdmin.inactivateProfileModal?.classList.remove("active");
     }
 
-    //VISUALIZAR TIPOS DE DOCUMENTO
-    if (e.target.closest("#closeTypeDocument") || e.target.closest("#cancelTypeDocument")) {
-      elementsAdmin.typeDocumentModal?.classList.remove("active");
-    }
-
     //AGREGAR TIPOS DE DOCUMENTO
     if (e.target.closest("#closeAddTypeDocument") || e.target.closest("#cancelAddTypeDocument")) {
       elementsAdmin.addTypeDocumentModal?.classList.remove("active");
@@ -800,11 +783,6 @@ function initializeEventListeners() {
       elementsAdmin.inactivateSeedModal?.classList.remove("active");
     }
 
-    //VISUALIZAR TIPOS DE SEMILLA
-    if (e.target.closest("#closeTypeSeed") || e.target.closest("#cancelTypeSeed")) {
-      elementsAdmin.typeSeedModal?.classList.remove("active");
-    }
-
     //AGREGAR TIPOS DE SEMILLA
     if (e.target.closest("#closeAddTypeSeed") || e.target.closest("#cancelAddTypeSeed")) {
       elementsAdmin.addTypeSeedModal?.classList.remove("active");
@@ -830,11 +808,6 @@ function initializeEventListeners() {
       elementsAdmin.updateTechnicalSheetModal?.classList.remove("active");
     }
 
-    //VISUALIZAR TIPOS DE CLIMA
-    if (e.target.closest("#closeTypeWeather") || e.target.closest("#cancelTypeWeather")) {
-      elementsAdmin.typeWeatherModal?.classList.remove("active");
-    }
-
     //AGREGAR TIPOS DE CLIMA
     if (e.target.closest("#closeAddTypeWeather") || e.target.closest("#cancelAddTypeWeather")) {
       elementsAdmin.addTypeWeatherModal?.classList.remove("active");
@@ -848,11 +821,6 @@ function initializeEventListeners() {
     //INACTIVAR TIPOS DE CLIMA
     if (e.target.closest("#closeInactivateTypeWeather") || e.target.closest("#cancelInactivateTypeWeather")) {
       elementsAdmin.inactivateTypeWeatherModal?.classList.remove("active");
-    }
-
-    //VISUALIZAR TIPOS DE TIERRA
-    if (e.target.closest("#closeTypeSoil") || e.target.closest("#cancelTypeSoil")) {
-      elementsAdmin.typeSoilModal?.classList.remove("active");
     }
 
     //AGREGAR TIPOS DE TIERRA
@@ -888,6 +856,16 @@ function initializeEventListeners() {
     //INACTIVAR JARDINERA
     if (e.target.closest("#closeInactivateGarden") || e.target.closest("#cancelInactivateGarden")) {
       elementsAdmin.inactivateGardenModal?.classList.remove("active");
+    }
+
+    //ACTUALIZAR ALERTA
+    if (e.target.closest("#closeUpdateAlert") || e.target.closest("#cancelUpdateAlert")) {
+      elementsAdmin.updateAlertModal?.classList.remove("active");
+    }
+
+    //INACTIVAR ALERTA
+    if (e.target.closest("#closeInactivateAlert") || e.target.closest("#cancelInactivateAlert")) {
+      elementsAdmin.inactivateAlertModal?.classList.remove("active");
     }
 
     //ACTUALIZAR FACTOR EXTERNO

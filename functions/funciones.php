@@ -5,18 +5,16 @@
         function recuperarFechaActual(){
             //Recuperar la fecha y hora actual del sistema
             date_default_timezone_set("America/Bogota");
-            $fechaActual=date('Y-m-d');
 
-            return $fechaActual;
+            return date('Y-m-d');
         }
 
         //Función para recuperar la fecha y hora actual del sistema
         function recuperarFechaActualConHora(){
             //Recuperar la fecha y hora actual del sistema
             date_default_timezone_set("America/Bogota");
-            $fechaActual=date('Y-m-d H:i:s');
 
-            return $fechaActual;
+            return date('Y-m-d H:i:s');
         }
 
         //Función para abrir la conexión a la base de datos
@@ -93,6 +91,13 @@
 
             return $tendencia;
         }
+
+        //Función para añadir espacios y agregar mayusculas a un texto
+        function formatearTexto($texto){
+            $texto=preg_replace('/([a-z])([A-Z])/','$1 $2', $texto);
+
+            return ucwords($texto);
+        }
     /**/
 
     /* USUARIOS */
@@ -102,9 +107,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM usuario WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos del usuario en forma de arreglo
@@ -131,9 +135,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT usuEstadoCorreo FROM usuario WHERE usuNumeroDocumento='$id' AND usuEstadoCorreo='Verificado'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la cantidad de jardineras de un usuario
@@ -141,18 +144,16 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT usuCantidadJardineras FROM usuario WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         function actualizarCantidadJardinerasUsuario($id, $cantidad){
             $conexion=abrirConexionDB();
 
             $query="UPDATE usuario SET usuCantidadJardineras='$cantidad' WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
         
         //Función para registrar un usuario en la base de datos
@@ -162,10 +163,8 @@
             $query="INSERT INTO usuario (usuNombre, idTipoDocumento, usuNumeroDocumento, usuCorreo, usuEstadoCorreo, 
             usuCantidadJardineras, usuTipoUsuario, usuEstado, usuContrasena, usuBarrio, usuFechaIngreso) 
             VALUES('$nombre','$tipoDocumento', '$documento', '$correo','No verificado', 0, 'Usuario', 'Activo', '$contrasena', '$barrio','$fecha')";
-            
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar la contraseña del usuario
@@ -173,9 +172,17 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE usuario SET usuContrasena='$contrasena' WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
+        }
+
+        //Función para actualizar la cantidad de intentos de acceso a la cuenta de un usuario
+        function actualizarIntentosAcceso($cantidad, $id){
+            $conexion=abrirConexionDB();
+
+            $query="UPDATE usuario SET usuIntentosAcceso='$cantidad' WHERE usuNumeroDocumento='$id'";
+
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado del correo electronico
@@ -183,9 +190,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE usuario SET usuEstadoCorreo='Verificado' WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el último acceso del usuario
@@ -193,9 +199,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE usuario SET usuUltimoAcceso='$fechaHora' WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para calcular tiempo de actividad del usuario
@@ -242,9 +247,8 @@
             $query="SELECT * FROM usuario 
             INNER JOIN tipo_documento ON usuario.idTipoDocumento=tipo_documento.idTipoDocumento
             WHERE usuTipoUsuario='Usuario'"; 
-            $resultado=mysqli_query($conexion, $query); 
 
-            return $resultado; 
+            return mysqli_query($conexion, $query); 
         }
 
         //Función para contar todos los usuarios activos
@@ -266,9 +270,8 @@
             $query="UPDATE usuario SET usuNombre='$nombre', usuTipoUsuario='$tipoUsuario', idTipoDocumento='$tipoDocumento',
             usuCorreo='$correo', usuEstadoCorreo='$estadoCorreo', usuBarrio='$barrio', usuImagen='$avatar', usuCantidadJardineras='$cantidadJardineras' 
             WHERE usuNumeroDocumento='$usuario'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de un usuario
@@ -276,9 +279,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE usuario SET usuEstado='$estado' WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Funcion para agregar la ruta de la imagen de perfil del usuario a la base de datos
@@ -286,9 +288,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE usuario SET usuImagen='$rutaImagen' WHERE usuNumeroDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
         
@@ -298,9 +299,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT tipoDocDescripcion FROM tipo_documento WHERE idTipoDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todos los tipos de documentos
@@ -308,9 +308,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_documento ";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos del tipo de documento por su id, retorna un arreglo con la info
@@ -332,9 +331,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_documento WHERE tipoDocEstado='Activo'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar si existe un tipo de documento en el sistema por su descripcion
@@ -356,9 +354,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO tipo_documento (tipoDocDescripcion) VALUES ('$descripcion')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar un tipo de documento por su id 
@@ -366,9 +363,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_documento  SET tipoDocDescripcion= '$descripcion' WHERE idTipoDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de un tipo de documento por su id 
@@ -376,9 +372,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_documento  SET tipoDocEstado='$estado' WHERE idTipoDocumento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -389,9 +384,8 @@
 
             $fechaActual=recuperarFechaActualConHora();
             $query="INSERT INTO actividad (actFecha, actModulo, actAccion, actDescripcion, usuNumeroDocumento) VALUES('$fechaActual', '$modulo', '$accion', '$descripcion', '$usuario')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la última actividad registrada en la base de datos
@@ -413,9 +407,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM actividad ORDER BY idActividad DESC LIMIT 10";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -427,9 +420,8 @@
 
             $query="SELECT soliFecha, soliAsunto, soliSemilla, soliDescripcion, soliEstado, usuNumeroDocumento FROM solicitud 
             WHERE usuNumeroDocumento='$usuario' AND soliEstado='Pendiente'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todas las solicitudes asociadas a un usuario en cualquier estado
@@ -438,9 +430,8 @@
 
             $query="SELECT soliFecha, soliAsunto, soliSemilla, soliDescripcion, soliEstado, usuNumeroDocumento FROM solicitud 
             WHERE usuNumeroDocumento='$usuario' AND (soliEstado='Confirmada' OR soliEstado='Rechazada')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para contar todas las solicitudes pendientes
@@ -460,9 +451,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM solicitud WHERE soliEstado='Pendiente'  ORDER BY idSolicitud DESC";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar las últimas solicitudes ya confirmadas o rechazadas
@@ -471,9 +461,8 @@
 
             $query="SELECT * FROM solicitud WHERE soliEstado='Confirmada' OR soliEstado='Rechazada'
             ORDER BY idSolicitud DESC LIMIT 5";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar toda la información de una solicitud
@@ -495,9 +484,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion, soliEstado) VALUES('$fecha', '$tipo', '$mensaje', 'Pendiente')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para registrar una solicitud variada en la base de datos con el estado pendiente
@@ -511,10 +499,8 @@
                 $query="INSERT INTO solicitud (soliFecha, soliAsunto, soliDescripcion,  soliEstado, usuNumeroDocumento)
                 VALUES('$fecha', '$tipo', '$mensaje', 'Pendiente', '$usuario')";
             }
-            
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
         
         //Función para actualizar el estado de la solicitud
@@ -522,9 +508,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE solicitud SET soliEstado='$estado' WHERE idSolicitud='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -534,9 +519,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM resena ORDER BY idResena DESC";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar las 5 últimas reseñas que se muestran en el index
@@ -544,9 +528,8 @@
             $conexion=abrirConexionDB();
             
             $query="SELECT * FROM resena WHERE resenaEstado='Activa' ORDER BY resenaFecha DESC LIMIT 15";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos de una reseña por su id, retorna un arreglo
@@ -575,9 +558,7 @@
                 VALUES('$fecha','$nombre', '$correo', '$mensaje')";
             }
 
-            $resultado=mysqli_query($conexion, $query);
-
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de una reseña 
@@ -585,9 +566,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE resena SET resenaEstado='$estado' WHERE idResena='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /* */
 
@@ -597,9 +577,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM semilla WHERE semEstado='Activa'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todas las semillas de la base de datos
@@ -608,9 +587,8 @@
 
             $query="SELECT * FROM semilla
             INNER JOIN tipo_semilla ON semilla.idTipoSemilla=tipo_semilla.idTipoSemilla ORDER BY idSemilla";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia de una semilla específica por su nombre
@@ -618,9 +596,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT semNombre FROM semilla WHERE semNombre='$nombre'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia de una semilla por su id
@@ -671,9 +648,8 @@
 
             $query="SELECT idSemilla, semNombre, idEtapaCrecimiento FROM semilla 
             WHERE idEtapaCrecimiento='0'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar las semillas que no tengan registrada una ficha tecnica
@@ -681,9 +657,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM semilla WHERE idFicha='0'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todas las semillas activas con información completa
@@ -695,10 +670,8 @@
             }else{
                 $query="SELECT * FROM semilla WHERE semEstado='Activa' AND idFicha!='0' AND idEtapaCrecimiento!='0'";
             }
-        
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para agregar una nueva semilla
@@ -706,9 +679,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO semilla (semNombre, semImagen, semObservaciones, idTipoSemilla) VALUES('$nombre', '$rutaImagen', '$observaciones', '$tipoSemilla')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar una semilla
@@ -717,9 +689,8 @@
 
             $query="UPDATE semilla SET semNombre ='$nombre', semImagen='$rutaImagen', semObservaciones='$observacion', idTipoSemilla='$tipoSemilla'
             WHERE idSemilla='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
         
         //Función para actualizar el estado de una semilla
@@ -727,9 +698,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE semilla SET semEstado ='$estado' WHERE idSemilla='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }  
     /**/
 
@@ -739,9 +709,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT tipoSemDescripcion FROM tipo_semilla WHERE idTipoSemilla='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todos los tipos de semilla
@@ -749,9 +718,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_semilla WHERE tipoSemEstado='Activa'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todos los tipos de semilla
@@ -759,9 +727,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_semilla";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos de un tipo de semilla, retorna un arreglo
@@ -797,9 +764,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO tipo_semilla (tipoSemDescripcion) VALUES ('$descripcion')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar un tipo de semilla
@@ -807,9 +773,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_semilla SET tipoSemDescripcion='$descripcion' WHERE idTipoSemilla='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de un tipo de semilla
@@ -817,9 +782,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_semilla SET tipoSemEstado='$estado' WHERE idTipoSemilla='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -849,9 +813,8 @@
             INNER JOIN tipo_tierra ON ficha_tecnica.idTipoTierra=tipo_tierra.idTipoTierra
             INNER JOIN tipo_clima ON ficha_tecnica.idTipoClima=tipo_clima.idTipoClima
             INNER JOIN semilla ON ficha_tecnica.idSemilla=semilla.idSemilla WHERE semilla.idFicha!='0' ORDER BY ficha_tecnica.idSemilla";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos de una ficha técnica por su id, retorna un arreglo
@@ -929,9 +892,8 @@
             $query="UPDATE ficha_tecnica SET idTipoClima='$idTipoClima', fichaTemperaturaMin='$temperaturaMin', fichaTemperaturaMax='$temperaturaMax', 
             fichaHumedadMin='$humedadMin', fichaHumedadMax='$humedadMax', fichaCantidadAguaMin='$cantidadAguaMin', fichaCantidadAguaMax='$cantidadAguaMax', idTipoTierra=' $idTipoTierra', 
             fichaCantidadTierraMin='$cantidadTierraMin', fichaCantidadTierraMax='$cantidadTierraMax', fichaEspacio='$espacio' WHERE idFicha='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -941,9 +903,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT tipoTierraDescripcion FROM tipo_tierra WHERE idTipoTierra='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos del tipo de tierra por su id
@@ -965,9 +926,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_tierra WHERE tipoTierraEstado='Activo'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todos los tipos de tierra
@@ -975,9 +935,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_tierra";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia de un tipo de tierra por su descripción
@@ -999,9 +958,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO tipo_tierra (tipoTierraDescripcion) VALUES ('$descripcion')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado; 
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar un tipo de tierra
@@ -1009,9 +967,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_tierra SET tipoTierraDescripcion='$descripcion' WHERE idTipoTierra='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de un tipo de tierra
@@ -1019,9 +976,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_tierra SET tipoTierraEstado='$estado' WHERE idTipoTierra='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         } 
     /**/
 
@@ -1031,9 +987,21 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT tipoClimaDescripcion FROM tipo_clima WHERE idTipoClima='$id'";
+
+            return mysqli_query($conexion, $query);
+        }
+
+        //Función para consultar el tipo de clima por su descripcion
+        function consultarTipoClimaPorDescripcion($descripcion){
+            $conexion=abrirConexionDB();
+
+            $query="SELECT idTipoClima FROM tipo_clima WHERE tipoClimaDescripcion='$descripcion'";
             $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            if(mysqli_num_rows($resultado)>0){
+                $datos=arregloDatos($resultado);
+                return $datos["idTipoClima"];
+            }
         }
 
         //Función para consultar los datos de un tipo de clima por su id, retorna un arreglo
@@ -1055,9 +1023,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_clima WHERE tipoClimaEstado='Activo'";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todos los tipos de clima
@@ -1065,9 +1032,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM tipo_clima";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia del tipo de clima
@@ -1084,14 +1050,46 @@
             }
         }
 
+        //Función para obtener el tipo de clima según la temperatura y humedad actual
+        function obtenerTipoClima($temperatura, $humedad){
+            // Frío
+            if ($temperatura < 10) {
+                return "Frío";
+            }
+
+            // Templado-frío
+            if ($temperatura < 18) {
+                return "Templado-frío";
+            }
+
+            // Climas secos
+            if ($humedad < 50) {
+
+                if ($temperatura >= 30) {
+                    return "Cálido-seco";
+                }
+                return "Templado-seco";
+            }
+
+            // Climas normales
+            if ($temperatura < 25) {
+                return "Templado";
+            }
+
+            if ($temperatura < 30) {
+                return "Templado-cálido";
+            }
+
+            return "Cálido";
+        }
+
         //Función para registrar un nuevo tipo de clima
         function registrarTipoClima($descripcion){
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO tipo_clima (tipoClimaDescripcion) VALUES('$descripcion')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar un tipo de clima
@@ -1099,9 +1097,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_clima SET tipoClimaDescripcion='$descripcion' WHERE idTipoClima='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de un tipo de clima
@@ -1109,9 +1106,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE tipo_clima SET tipoClimaEstado='$estado' WHERE idTipoClima='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -1133,10 +1129,9 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM etapas_crecimiento 
-            INNER JOIN semilla ON etapas_crecimiento.idEtapaCrecimiento=semilla.idEtapaCrecimiento";
-            $resultado=mysqli_query($conexion, $query); 
+            INNER JOIN semilla ON etapas_crecimiento.idEtapaCrecimiento=semilla.idEtapaCrecimiento"; 
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para registra una nueva etapa de crecimiento
@@ -1196,9 +1191,8 @@
             $query="UPDATE etapas_crecimiento SET etapaCreDiasGerminacionMin='$germinacionMin',etapaCreDiasGerminacionMax='$germinacionMax',etapaCreDiasDesarrolloVegetativoMin='$desarrolloVegetativoMin',
             etapaCreDiasDesarrolloVegetativoMax='$desarrolloVegetativoMax', etapaCreDiasFloracionMin='$floracionMin',etapaCreDiasFloracionMax='$floracionMax', etapaCreDiasLlenadoGranosMin='$llenadoGranosMin',
             etapaCreDiasLlenadoGranosMax='$llenadoGranosMax', etapaCreDiasCosechaMin='$cosechaMin',etapaCreDiasCosechaMax='$cosechaMax' WHERE idEtapaCrecimiento='$id'";
-            $resultado = mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -1209,9 +1203,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM jardinera WHERE usuNumeroDocumento='$usuario'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todas las jardineras
@@ -1222,9 +1215,8 @@
             INNER JOIN semilla ON jardinera.idSemilla=semilla.idSemilla
             INNER JOIN fase ON jardinera.idFase=fase.idFase
             INNER JOIN usuario ON jardinera.usuNumeroDocumento=usuario.usuNumeroDocumento";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos de la jardinera relacionadas a un usuario, retorna un arreglo
@@ -1348,9 +1340,8 @@
 
             $query="INSERT INTO jardinera (jarNombre, jarDescripcion, jarFechaCreacion, idFase, jarPorcentajeEvolucion, idSemilla, usuNumeroDocumento) 
             VALUES('$nombre', '$descripcion', '$fechaActual', '1', '10', '$semilla', '$usuario' )";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado; 
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar los datos de una jardinera
@@ -1358,9 +1349,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE jardinera SET jarNombre='$nombre', jarDescripcion='$descripcion' WHERE idJardinera='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar los datos de una jardinera por parte de un administrador
@@ -1368,9 +1358,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE jardinera SET jarNombre='$nombre', jarDescripcion='$descripcion', idFase='$fase' WHERE idJardinera='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
         
         //Función para actualizar el estado de una jardinera
@@ -1403,22 +1392,43 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE jardinera SET jarPorcentajeEvolucion='$porcentaje', idFase='$nuevaFase' WHERE idJardinera='$idJardinera'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
     /* ALERTAS */
+        //Función para consultar todas las alertas activas o inactivas del sistema
+        function consultarTodasAlertas(){
+            $conexion=abrirConexionDB();
+
+            $query="SELECT * FROM alerta INNER JOIN jardinera ON alerta.idJardinera=jardinera.idJardinera";
+
+            return mysqli_query($conexion, $query);
+        }
+
+        //Función para consultar todos los datos de una alerta por su id 
+        function consultarDatosAlertaPorId($id){
+            $conexion=abrirConexionDB();
+
+            $query="SELECT * FROM alerta WHERE idAlerta='$id'";
+            $resultado=mysqli_query($conexion, $query);
+
+            if(mysqli_num_rows($resultado)>0){
+                $datos=arregloDatos($resultado);
+            }
+
+            return $datos;
+        }
+
         //Función para registrar la alerta generada por el sistema
         function registrarAlerta($fecha, $tipo, $descripcion, $recomendacion, $valorRegistrado, $rangoRecomendado, $id){
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO alerta (alerFecha, alerTipo, alerDescripcion, alerRecomendacion, alerValorRegistrado, alerRangoRecomendado, idJardinera) 
             VALUES('$fecha','$tipo','$descripcion', '$recomendacion', '$valorRegistrado', '$rangoRecomendado', '$id')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar las alertas activas de un usuario por su id 
@@ -1431,9 +1441,8 @@
             INNER JOIN usuario ON jardinera.usuNumeroDocumento=usuario.usuNumeroDocumento 
             WHERE usuario.usuNumeroDocumento='$usuario' AND
             alerta.alerEstado='Activa'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia de una alerta activa de un tipo específico para una jardinera
@@ -1458,14 +1467,32 @@
             return mysqli_query($conexion, $query);
         }
     
+        //Función para actualizar la alerta
+        function actualizarAlerta($id, $tipo, $descripcion, $recomendacion, $valorRegistrado, $rangoRecomendado){
+            $conexion=abrirConexionDB();
+
+            $query="UPDATE alerta SET alerTipo='$tipo', alerDescripcion='$descripcion', alerRecomendacion='$recomendacion', 
+            alerValorRegistrado='$valorRegistrado', alerRangoRecomendado='$rangoRecomendado' WHERE idAlerta='$id'";
+
+            return mysqli_query($conexion, $query);
+        }
+
+        //Función para actualizar el estado de la alerta por un admnistrador
+        function actualizarEstadoAlertaAdmin($id, $estado){
+            $conexion=abrirConexionDB();
+
+            $query="UPDATE alerta SET alerEstado='$estado' WHERE idAlerta='$id'";
+
+            return mysqli_query($conexion, $query);
+        }
+
         //Función para actualizar el estado de la alerta
         function actualizarEstadoAlerta($id){
             $conexion=abrirConexionDB();
 
             $query="UPDATE alerta SET alerEstado='Inactiva' WHERE idAlerta='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la cantidad de alertas de una usuario activo
@@ -1476,9 +1503,8 @@
             INNER JOIN jardinera ON alerta.idJardinera=jardinera.idJardinera
             WHERE jardinera.usuNumeroDocumento='$usuario'
             AND alerta.alerEstado='Activa'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -1488,9 +1514,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM factores_externos WHERE idJardinera='$id' ORDER BY idFactoresExternos ASC LIMIT 3";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los factores externos registrados por el id de la jardinera y su estado sea registrado
@@ -1509,9 +1534,8 @@
             $query="SELECT * FROM factores_externos
             INNER JOIN jardinera ON factores_externos.idJardinera=jardinera.idJardinera
             INNER JOIN tipo_clima ON factores_externos.idTipoClima=tipo_clima.idTipoClima";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar un factor externo por su id
@@ -1535,9 +1559,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO factores_externos (factHumedad,idTipoClima, factTemperatura, factCantidadAgua, idJardinera) VALUES('$humedad','$clima','$temperatura', '$cantidadAgua', '$id')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar un factor externo
@@ -1545,9 +1568,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE factores_externos SET factHumedad='$humedad', idTipoClima='$tipoClima', factTemperatura='$temperatura', factCantidadAgua='$cantidadAgua' WHERE idFactoresExternos='$id' ";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de un factor externo por el administrador
@@ -1555,9 +1577,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE factores_externos SET factEstado='$estado' WHERE idFactoresExternos='$id' ";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado del factor externo tras ser evaluado para generar una alerta
@@ -1565,9 +1586,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE factores_externos SET factEstado='Evaluado' WHERE idFactoresExternos='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -1577,9 +1597,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT segJardineraFecha, segJardineraNota, segJardineraImagen, segJardineraPorcentaje FROM seguimiento_jardinera WHERE idJardinera='$idJardinera' ORDER BY segJardineraFecha ASC";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todos los seguimientos registrados de todas las jardineras
@@ -1588,9 +1607,8 @@
 
             $query="SELECT * FROM seguimiento_jardinera 
             INNER JOIN jardinera ON seguimiento_jardinera.idJardinera=jardinera.idJardinera";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar los datos de un monitoreo por su id, retorna un arreglo
@@ -1629,9 +1647,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE seguimiento_jardinera SET segJardineraNota='$nota', segJardineraImagen='$rutaImagen', segJardineraPorcentaje='$porcentaje' WHERE idSeguimiento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado del monitoreo por parte de un administrador
@@ -1639,9 +1656,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE seguimiento_jardinera SET segJardineraEstado='$estado' WHERE idSeguimiento='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado del registro de una evolucion de una jardinera
@@ -1649,9 +1665,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE seguimiento_jardinera SET segJardineraEstado='Inactiva' WHERE idJardinera='$idJardinera' AND segJardineraEstado='Activa'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado; 
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -1675,9 +1690,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM fase WHERE idFase='$id' ";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todas las fases activas del sistema
@@ -1685,9 +1699,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM fase WHERE faseEstado='Activa'";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar todas las fases del sistema
@@ -1695,9 +1708,8 @@
             $conexion=abrirConexionDB();
 
             $query="SELECT * FROM fase";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia de una fase por su nombre
@@ -1719,9 +1731,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO fase (faseNombre, faseDescripcion, fasePorcentaje) VALUES('$nombre', '$descripcion', '$porcentaje')";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar una fase por su id 
@@ -1729,9 +1740,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE fase SET faseNombre='$nombre', faseDescripcion='$descripcion', fasePorcentaje='$porcentaje' WHERE idFase='$id'";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de una fase 
@@ -1739,9 +1749,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE fase SET faseEstado='$estado' WHERE idFase='$id'";
-            $resultado=mysqli_query($conexion, $query);
             
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/
 
@@ -1753,9 +1762,8 @@
             $query="SELECT * FROM pregunta
             INNER JOIN fase ON pregunta.idFase=fase.idFase
             WHERE pregunta.idFase='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para consultar la existencia de una fase por la descripción de su pregunta
@@ -1793,9 +1801,8 @@
             $conexion=abrirConexionDB();
 
             $query="INSERT INTO pregunta (pregDescripcion, pregPorcentaje, idFase) VALUES ('$pregunta', '$porcentaje', '$idFase')";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar una pregunta
@@ -1803,9 +1810,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE pregunta SET pregDescripcion='$pregunta', pregPorcentaje='$porcentaje' WHERE idPregunta='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
 
         //Función para actualizar el estado de la pregunta
@@ -1813,9 +1819,8 @@
             $conexion=abrirConexionDB();
 
             $query="UPDATE pregunta SET pregEstado='$estado' WHERE idPregunta='$id'";
-            $resultado=mysqli_query($conexion, $query);
 
-            return $resultado;
+            return mysqli_query($conexion, $query);
         }
     /**/    
 ?>
