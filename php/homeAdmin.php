@@ -1586,36 +1586,64 @@
                                 </p>
                             </div>
 
-                           <div class="info-row info-row-multi">
-                                <span>Última actividad</span>
-                                <div class="activity-details">
-                                    <?php $datosUltimaActividad=consultarUltimaActividad(); ?>
-                                    <p><strong>Fecha:</strong> <?php echo $datosUltimaActividad["actFecha"] ?></p>
-                                    <p><strong>Módulo:</strong> <?php echo $datosUltimaActividad["actModulo"] ?></p>
-                                    <p><strong>Acción:</strong> <?php echo $datosUltimaActividad["actAccion"] ?></p>
-                                    <p><strong>Detalle:</strong> <?php echo $datosUltimaActividad["actDescripcion"] ?></p>
-                                    <p><strong>Usuario:</strong> <?php echo ($datosUltimaActividad["usuNumeroDocumento"] != 0 ? $datosUltimaActividad["usuNumeroDocumento"] : "Sin usuario asociado") ?></p>
-                                </div>
+                            <div class="info-row">
+                                <span>Última acción</span>
+                                <p>
+                                    <?php 
+                                    $datosUltimaActividad = consultarUltimaActividad();
+                                    $usuario= ($datosUltimaActividad["usuNumeroDocumento"] != 0) ? $datosUltimaActividad["usuNumeroDocumento"] : "Sin usuario asociado";
+                                    echo $datosUltimaActividad["actAccion"] . " por " . $usuario  ?>
+                                </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="info-box activity-box">
-                        <h3>Actividad Reciente</h3>
-                        <div class="activity-summary">
-                            <p class="activity-note">
-                                <?php 
-                                    $resultadoConsultarUltimasActividades=consultarUltimasActividades();
-                                    while($datosUltimasActividades=mysqli_fetch_assoc($resultadoConsultarUltimasActividades)){
-                                        echo $datosUltimasActividades["actAccion"] . " en " . $datosUltimasActividades["actModulo"] . 
-                                        " el " . $datosUltimasActividades["actFecha"] . 
-                                        " por ". ($datosUltimasActividades["usuNumeroDocumento"] != 0 ? $datosUltimasActividades["usuNumeroDocumento"] : "Sin usuario asociado");
-                                        echo "<br>";
-                                    } 
-                                ?>
-                            </p>
+                        <h3><i class="fas fa-history"></i> Actividad Reciente</h3>
+
+                        <div class="activity-list">
+                            <?php
+                            $resultadoConsultarUltimasActividades = consultarUltimasActividades();
+
+                            while($datosUltimasActividades = mysqli_fetch_assoc($resultadoConsultarUltimasActividades)){
+                            ?>
+                                <div class="activity-item">
+
+                                    <div class="activity-icon">
+                                        <i class="fas fa-user-clock"></i>
+                                    </div>
+
+                                    <div class="activity-content">
+
+                                        <div class="activity-title">
+                                            <strong><?php echo $datosUltimasActividades["actAccion"]; ?></strong>
+                                            <span>en <?php echo $datosUltimasActividades["actModulo"]; ?></span>
+                                        </div>
+
+                                        <div class="activity-info">
+                                            <span>
+                                                <i class="fas fa-calendar-alt"></i>
+                                                <?php echo $datosUltimasActividades["actFecha"]; ?>
+                                            </span>
+
+                                            <span>
+                                                <i class="fas fa-user"></i>
+                                                <?php
+                                                echo ($datosUltimasActividades["usuNumeroDocumento"] != 0)
+                                                ? $datosUltimasActividades["usuNumeroDocumento"]
+                                                : "Sin usuario";
+                                                ?>
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            <?php } ?>
                         </div>
+
                     </div>
+
                 </section>
             </section>
             
